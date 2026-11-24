@@ -1,0 +1,1098 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>re:Invent Campus Compass</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: wayfinding sign system. Day rail on top, itinerary (time) left, Strip map (distance) right; stacks on phones. */
+:root {
+  --bg: #f2f1f6;
+  --surface: #ffffff;
+  --surface-2: #e8e6f0;
+  --ink: #1d1a33;
+  --muted: #625e7a;
+  --line: #d4d1e0;
+  --accent: #5b3fd6;
+  --accent-ink: #ffffff;
+  --ok: #1f8a5b;
+  --warn: #b66a00;
+  --bad: #c8323d;
+  --map-bg: #e9e7f1;
+  --map-road: #b9b4cc;
+  --map-strip: #8e86ad;
+  --v-ven: #c2410c;
+  --v-wyn: #9a6a00;
+  --v-enc: #b4237a;
+  --v-cfo: #0f7a8a;
+  --v-cpl: #3b5bdb;
+  --v-mgm: #2f8a3a;
+  --v-other: #77738f;
+  --font-display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14121f; --surface: #1d1a2c; --surface-2: #272339; --ink: #ecebf4; --muted: #a29eb9;
+    --line: #353049; --accent: #9d8bff; --accent-ink: #14121f; --ok: #4cc38a; --warn: #f0a530; --bad: #ff6b74;
+    --map-bg: #1a1728; --map-road: #3a3552; --map-strip: #6d6690;
+    --v-ven: #ff8a4c; --v-wyn: #e3b23c; --v-enc: #ff6fbf; --v-cfo: #3cc7d6; --v-cpl: #8aa2ff; --v-mgm: #6fd17a; --v-other: #9692ad;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14121f; --surface: #1d1a2c; --surface-2: #272339; --ink: #ecebf4; --muted: #a29eb9;
+  --line: #353049; --accent: #9d8bff; --accent-ink: #14121f; --ok: #4cc38a; --warn: #f0a530; --bad: #ff6b74;
+  --map-bg: #1a1728; --map-road: #3a3552; --map-strip: #6d6690;
+  --v-ven: #ff8a4c; --v-wyn: #e3b23c; --v-enc: #ff6fbf; --v-cfo: #3cc7d6; --v-cpl: #8aa2ff; --v-mgm: #6fd17a; --v-other: #9692ad;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 20px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: .01em; text-wrap: balance; margin: 0; }
+h1 { font-size: 2.1rem; line-height: 1; }
+h2 { font-size: 1.45rem; line-height: 1.1; }
+h3 { font-size: 1.15rem; }
+.eyebrow { font-family: var(--font-display); text-transform: uppercase; letter-spacing: .12em; font-size: .8rem; color: var(--muted); font-weight: 600; }
+.mono, time, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+button, select, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+
+/* header */
+header.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; }
+.brand { display: grid; gap: 4px; }
+.savechip { font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.savechip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.savechip[data-state="cloud"]::before { background: var(--ok); }
+.savechip[data-state="saving"]::before { background: var(--warn); }
+
+/* now panel */
+.now { background: var(--ink); color: var(--bg); border-radius: var(--radius); padding: 14px 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; }
+.now .clock { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 500; }
+.now .msg { flex: 1 1 280px; min-width: 0; }
+.now .msg strong { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; letter-spacing: .01em; }
+
+/* settings bar */
+.settings { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: end; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+select, input[type="text"], input[type="time"], input[type="number"], textarea {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 7px 10px; min-height: 38px; max-width: 100%;
+}
+textarea { width: 100%; min-height: 150px; font-family: var(--font-mono); font-size: .85rem; resize: vertical; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 7px 12px; min-height: 38px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 7px 14px; min-height: 38px; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.ghost { background: transparent; }
+.btn.danger { color: var(--bad); }
+
+/* day rail */
+.days { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.day { border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: 8px 10px; text-align: left; display: grid; gap: 2px; position: relative; }
+.day .dn { font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; line-height: 1; }
+.day .dd { font-size: .78rem; color: var(--muted); }
+.day .dc { font-size: .75rem; color: var(--muted); }
+.day[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.day .flag { position: absolute; top: 8px; right: 8px; width: 9px; height: 9px; border-radius: 50%; }
+.day .flag.bad { background: var(--bad); }
+.day .flag.warn { background: var(--warn); }
+@media (max-width: 640px) { .days { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* strip timeline */
+.daystrip { position: relative; height: 46px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.daystrip .tick { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--line); font-size: .68rem; color: var(--muted); padding-left: 3px; font-family: var(--font-mono); }
+.daystrip .blk { position: absolute; top: 16px; height: 24px; border-radius: 3px; color: #fff; font-size: .7rem; padding: 3px 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600; }
+.daystrip .trv { position: absolute; top: 24px; height: 8px; border-radius: 4px; }
+.daystrip .nowline { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--bad); }
+
+/* main grid */
+.main { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px; }
+
+/* itinerary */
+.itin { display: grid; gap: 0; }
+.stop { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; padding: 10px 0; }
+.stop .t { font-family: var(--font-mono); font-size: .85rem; line-height: 1.3; }
+.stop .t .end { color: var(--muted); display: block; }
+.card { border-left: 4px solid var(--vc, var(--v-other)); padding: 2px 0 2px 12px; display: grid; gap: 4px; min-width: 0; }
+.card .ttl { font-weight: 600; overflow-wrap: anywhere; }
+.card .meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .85rem; color: var(--muted); align-items: center; }
+.vtag { font-family: var(--font-display); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: .8rem; color: #fff; background: var(--vc, var(--v-other)); padding: 1px 7px; border-radius: 3px; }
+.card .acts { display: flex; gap: 6px; }
+.card .acts button { border: 0; background: none; color: var(--muted); font-size: .8rem; padding: 2px 0; text-decoration: underline; text-underline-offset: 2px; }
+.example { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; border: 1px dashed var(--muted); border-radius: 3px; padding: 0 5px; }
+.leg { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; }
+.leg .rail { display: flex; justify-content: center; }
+.leg .rail span { width: 2px; background: repeating-linear-gradient(var(--line) 0 4px, transparent 4px 8px); }
+.legbox { border-radius: var(--radius); padding: 8px 12px; background: var(--surface-2); display: grid; gap: 4px; font-size: .88rem; border: 1px solid transparent; text-align: left; width: 100%; min-width: 0; }
+.legbox[data-sel="true"] { border-color: var(--accent); }
+.legbox .row1 { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.pill { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.bad { color: var(--bad); }
+.legbox .opts { display: flex; flex-wrap: wrap; gap: 4px 12px; color: var(--muted); font-size: .82rem; }
+.legbox .opts b { color: var(--ink); font-weight: 600; }
+.empty { padding: 24px 8px; text-align: center; color: var(--muted); }
+
+/* map */
+.mapwrap { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+.map { width: 100%; height: auto; display: block; background: var(--map-bg); border-radius: var(--radius); max-height: 78vh; }
+.map text { font-family: var(--font-display); }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .78rem; color: var(--muted); }
+.legend i { display: inline-block; width: 18px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 4px; }
+.legend i.dash { border-top-style: dashed; }
+
+/* lower sections */
+.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+@media (max-width: 900px) { .lower { grid-template-columns: minmax(0, 1fr); } }
+.formgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.formgrid .full { grid-column: 1 / -1; }
+.formgrid input, .formgrid select { width: 100%; }
+.rowbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+.note { font-size: .82rem; color: var(--muted); max-width: 70ch; }
+.toast { font-size: .85rem; color: var(--ok); min-height: 1.3em; }
+
+.tablewrap { overflow-x: auto; }
+table.matrix { border-collapse: collapse; font-size: .85rem; min-width: 560px; width: 100%; }
+.matrix th, .matrix td { border: 1px solid var(--line); padding: 6px 8px; text-align: center; }
+.matrix th { font-family: var(--font-display); font-weight: 600; letter-spacing: .03em; background: var(--surface-2); }
+.matrix td.same { background: var(--surface-2); color: var(--muted); }
+.matrix .w { display: block; font-family: var(--font-mono); }
+.matrix .s { display: block; font-family: var(--font-mono); color: var(--muted); font-size: .78rem; }
+
+.venues { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.vcard { border-top: 4px solid var(--vc); background: var(--surface); border-radius: var(--radius); padding: 12px 14px; display: grid; gap: 6px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.vcard ul { margin: 0; padding-left: 18px; font-size: .88rem; display: grid; gap: 3px; }
+footer { font-size: .8rem; color: var(--muted); max-width: 90ch; }
+footer a { color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .legbox, .day { transition: border-color .15s, box-shadow .15s; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">Las Vegas · Nov 30 – Dec 4, 2026</span>
+      <h1>re:Invent Campus Compass</h1>
+    </div>
+    <span class="savechip" id="savechip" data-state="local">Saved in this browser</span>
+  </header>
+
+  <section class="now" id="now" aria-live="polite">
+    <span class="clock" id="clock">--:--</span>
+    <div class="msg" id="nowmsg">Loading your schedule…</div>
+  </section>
+
+  <section class="settings" aria-label="Travel settings">
+    <div class="field">
+      <label for="hotel">Where you're staying</label>
+      <select id="hotel"></select>
+    </div>
+    <div class="field">
+      <label>Prefer</label>
+      <div class="seg" id="pref" role="group" aria-label="Preferred way to get around">
+        <button type="button" data-v="fastest">Fastest</button>
+        <button type="button" data-v="walk">Walk</button>
+        <button type="button" data-v="shuttle">Shuttle</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="buffer">Buffer (min)</label>
+      <input type="number" id="buffer" min="0" max="30" step="5" style="width:84px">
+    </div>
+    <div class="field">
+      <label for="pace">Walking pace</label>
+      <select id="pace">
+        <option value="0.85">Brisk</option>
+        <option value="1">Normal</option>
+        <option value="1.25">Relaxed</option>
+      </select>
+    </div>
+  </section>
+
+  <nav class="days" id="days" aria-label="Conference days"></nav>
+
+  <div class="daystrip" id="daystrip" aria-hidden="true"></div>
+
+  <div class="main">
+    <section class="panel" aria-labelledby="itin-h">
+      <div class="panel-head">
+        <h2 id="itin-h">Itinerary</h2>
+        <span class="small muted" id="itinsum"></span>
+      </div>
+      <div class="itin" id="itin"></div>
+    </section>
+
+    <section class="mapwrap panel" aria-labelledby="map-h">
+      <div class="panel-head">
+        <h2 id="map-h">The Strip</h2>
+        <span class="small muted" id="mapsum">Tap a leg to highlight it</span>
+      </div>
+      <svg class="map" id="map" role="img" aria-label="Map of the Las Vegas Strip showing re:Invent venues and today's route"></svg>
+      <div class="legend">
+        <span><i style="border-color:var(--ok)"></i>Enough time</span>
+        <span><i style="border-color:var(--warn)"></i>Tight</span>
+        <span><i style="border-color:var(--bad)"></i>Won't make it</span>
+        <span><i class="dash" style="border-color:var(--map-strip)"></i>Monorail</span>
+      </div>
+    </section>
+  </div>
+
+  <div class="lower">
+    <section class="panel" aria-labelledby="add-h">
+      <h2 id="add-h">Add a session</h2>
+      <form id="addform" class="formgrid" autocomplete="off">
+        <div class="field full"><label for="f-title">Title</label><input type="text" id="f-title" required placeholder="e.g. DEV301 Building event-driven apps"></div>
+        <div class="field"><label for="f-day">Day</label><select id="f-day"></select></div>
+        <div class="field"><label for="f-venue">Venue</label><select id="f-venue"></select></div>
+        <div class="field"><label for="f-start">Starts</label><input type="time" id="f-start" required value="10:00" step="300"></div>
+        <div class="field"><label for="f-end">Ends</label><input type="time" id="f-end" required value="11:00" step="300"></div>
+        <div class="field full"><label for="f-room">Room (optional)</label><input type="text" id="f-room" placeholder="e.g. Level 3, Lido 3001"></div>
+        <div class="rowbtns full">
+          <button class="btn primary" type="submit" id="f-submit">Add to schedule</button>
+          <button class="btn ghost" type="button" id="f-cancel" hidden>Cancel edit</button>
+        </div>
+        <div class="toast full" id="addtoast" role="status"></div>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="paste-h">
+      <h2 id="paste-h">Paste from the session catalog</h2>
+      <p class="note">Copy sessions from the re:Invent portal or app and paste them here. Put a blank line between sessions. Each block needs a day, a time range and a venue; the first other line becomes the title.</p>
+      <textarea id="paste" spellcheck="false" placeholder="SEC302 | Threat modeling for AI agents
+Wednesday, Dec 2, 1:00 PM - 2:00 PM PST
+Caesars Forum | Level 1 | Summit 232
+
+Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
+      <div class="rowbtns">
+        <button class="btn primary" type="button" id="paste-go">Import sessions</button>
+        <button class="btn" type="button" id="copy-text">Copy itinerary</button>
+        <button class="btn" type="button" id="ics" hidden>Download calendar (.ics)</button>
+        <button class="btn ghost danger" type="button" id="clear-ex">Remove example sessions</button>
+      </div>
+      <div class="toast" id="pastetoast" role="status"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="mx-h">
+    <div class="panel-head">
+      <h2 id="mx-h">Venue-to-venue travel</h2>
+      <span class="small muted">Door to door, minutes. Top: walking. Bottom: badge shuttle.</span>
+    </div>
+    <div class="tablewrap"><table class="matrix" id="matrix"></table></div>
+    <p class="note">These are planning estimates, not timetables. They include getting through the casino floor to the meeting space, which takes longer than the distance suggests. Check the official re:Invent app for live shuttle routes and stop locations during event week.</p>
+  </section>
+
+  <section aria-labelledby="vg-h" style="display:grid;gap:12px">
+    <h2 id="vg-h">Venue guide</h2>
+    <div class="venues" id="venues"></div>
+  </section>
+
+  <footer>
+    Venue list, dates and shuttle/monorail access reflect what AWS published for 2026; times are estimates for planning. Times shown are Las Vegas time (PT).
+    Official info: <a href="https://aws.amazon.com/events/reinvent/know-before-you-go/" target="_blank" rel="noopener">Know before you go</a> · <a href="https://aws.amazon.com/events/reinvent/faqs/" target="_blank" rel="noopener">FAQs</a>.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------------------ data */
+  const DAYS = [
+    { d: "2026-11-29", n: "Sun", l: "Nov 29" },
+    { d: "2026-11-30", n: "Mon", l: "Nov 30" },
+    { d: "2026-12-01", n: "Tue", l: "Dec 1" },
+    { d: "2026-12-02", n: "Wed", l: "Dec 2" },
+    { d: "2026-12-03", n: "Thu", l: "Dec 3" },
+    { d: "2026-12-04", n: "Fri", l: "Dec 4" },
+  ];
+
+  // Campus venues (2026). lat/lon are the meeting-space side of each property.
+  const VENUES = {
+    VEN: { name: "Venetian", full: "The Venetian · Venetian Expo", short: "VEN", color: "--v-ven", lat: 36.1216, lon: -115.1680, inside: 10,
+      tips: ["The biggest venue: keynotes and the Expo have historically been here.", "Session rooms sit on several levels of the Venetian Convention & Expo Center. Allow 10 minutes from the casino to your room.", "Walk to Wynn along the Strip side or through Palazzo."] },
+    WYN: { name: "Wynn", full: "Wynn Las Vegas", short: "WYN", color: "--v-wyn", lat: 36.1268, lon: -115.1652, inside: 6,
+      tips: ["Meeting space is at the back (east) of the property.", "Connected indoors to Encore; it's a short walk.", "Closest campus venue to the Venetian on foot."] },
+    ENC: { name: "Encore", full: "Encore Las Vegas", short: "ENC", color: "--v-enc", lat: 36.1290, lon: -115.1638, inside: 6,
+      tips: ["Reach it indoors from Wynn through the shared esplanade.", "Furthest north of the campus venues: going to MGM Grand from here takes the longest trip of the week."] },
+    CFO: { name: "Caesars Forum", full: "Caesars Forum", short: "CFO", color: "--v-cfo", lat: 36.1180, lon: -115.1662, inside: 5,
+      tips: ["A standalone conference center behind Harrah's and The LINQ, off the Strip.", "Walk through Harrah's or The LINQ and take the pedestrian bridge.", "Harrah's/The LINQ monorail station is a few minutes' walk away."] },
+    CPL: { name: "Caesars Palace", full: "Caesars Palace", short: "CPL", color: "--v-cpl", lat: 36.1170, lon: -115.1760, inside: 8,
+      tips: ["Large property on the west side of the Strip; the conference center is toward the back.", "Cross the Strip by the pedestrian bridges at Flamingo Rd.", "Flamingo/Caesars Palace monorail station is across the Strip, behind the Flamingo."] },
+    MGM: { name: "MGM Grand", full: "MGM Grand Conference Center", short: "MGM", color: "--v-mgm", lat: 36.1015, lon: -115.1655, inside: 12,
+      tips: ["The conference center is at the far east end, a 10–15 minute walk from the Strip entrance.", "It's a long way south of the other venues. Group your MGM sessions on the same day if you can.", "The MGM Grand monorail station is right beside the conference center."] },
+  };
+  const CAMPUS = ["ENC", "WYN", "VEN", "CFO", "CPL", "MGM"];
+
+  // Hotels people stay at (approximate entrance coordinates).
+  const HOTELS = {
+    VEN: { name: "The Venetian", lat: 36.1212, lon: -115.1697 },
+    PAL: { name: "The Palazzo", lat: 36.1240, lon: -115.1688 },
+    WYN: { name: "Wynn", lat: 36.1265, lon: -115.1660 },
+    ENC: { name: "Encore", lat: 36.1288, lon: -115.1648 },
+    TI:  { name: "Treasure Island", lat: 36.1247, lon: -115.1721 },
+    HAR: { name: "Harrah's", lat: 36.1196, lon: -115.1714 },
+    LNQ: { name: "The LINQ", lat: 36.1176, lon: -115.1708 },
+    FLA: { name: "Flamingo", lat: 36.1162, lon: -115.1709 },
+    CPL: { name: "Caesars Palace", lat: 36.1162, lon: -115.1745 },
+    HSB: { name: "Horseshoe", lat: 36.1137, lon: -115.1700 },
+    PAR: { name: "Paris", lat: 36.1125, lon: -115.1707 },
+    BEL: { name: "Bellagio", lat: 36.1126, lon: -115.1767 },
+    PH:  { name: "Planet Hollywood", lat: 36.1100, lon: -115.1716 },
+    COS: { name: "The Cosmopolitan", lat: 36.1097, lon: -115.1740 },
+    VDA: { name: "Vdara", lat: 36.1093, lon: -115.1780 },
+    ARI: { name: "ARIA", lat: 36.1072, lon: -115.1765 },
+    PMG: { name: "Park MGM", lat: 36.1025, lon: -115.1765 },
+    NYN: { name: "New York-New York", lat: 36.1023, lon: -115.1745 },
+    MGM: { name: "MGM Grand", lat: 36.1024, lon: -115.1700 },
+    SIG: { name: "Signature at MGM Grand", lat: 36.1010, lon: -115.1640 },
+    EXC: { name: "Excalibur", lat: 36.0988, lon: -115.1754 },
+    LUX: { name: "Luxor", lat: 36.0955, lon: -115.1761 },
+    MBY: { name: "Mandalay Bay", lat: 36.0909, lon: -115.1750 },
+    RW:  { name: "Resorts World", lat: 36.1340, lon: -115.1660 },
+    FTB: { name: "Fontainebleau", lat: 36.1385, lon: -115.1597 },
+    SAH: { name: "SAHARA", lat: 36.1420, lon: -115.1565 },
+    WGT: { name: "Westgate", lat: 36.1350, lon: -115.1532 },
+  };
+
+  // Hand-tuned door-to-door estimates between campus venues, minutes.
+  // [walk, shuttle] — null shuttle = walking is the better option.
+  const PAIRS = {
+    "VEN-WYN": [15, 20], "VEN-ENC": [20, 20], "VEN-CFO": [20, 20], "VEN-CPL": [25, 20], "VEN-MGM": [55, 30],
+    "WYN-ENC": [8, null], "WYN-CFO": [30, 25], "WYN-CPL": [35, 25], "WYN-MGM": [65, 35],
+    "ENC-CFO": [35, 25], "ENC-CPL": [40, 25], "ENC-MGM": [70, 35],
+    "CFO-CPL": [15, 20], "CFO-MGM": [45, 30],
+    "CPL-MGM": [40, 25],
+  };
+
+  const MONORAIL = [
+    { name: "MGM Grand", lat: 36.1020, lon: -115.1662 },
+    { name: "Horseshoe / Paris", lat: 36.1125, lon: -115.1686 },
+    { name: "Flamingo / Caesars Palace", lat: 36.1163, lon: -115.1683 },
+    { name: "Harrah's / The LINQ", lat: 36.1195, lon: -115.1688 },
+    { name: "Convention Center", lat: 36.1318, lon: -115.1527 },
+    { name: "Westgate", lat: 36.1358, lon: -115.1517 },
+    { name: "SAHARA", lat: 36.1427, lon: -115.1578 },
+  ];
+
+  const STRIP = [[36.0870,-115.1747],[36.1023,-115.1727],[36.1125,-115.1722],[36.1162,-115.1720],[36.1215,-115.1716],[36.1262,-115.1700],[36.1330,-115.1652],[36.1400,-115.1592],[36.1450,-115.1556]];
+  const STREETS = [
+    { name: "Tropicana Ave", pts: [[36.1023,-115.1800],[36.1023,-115.1600]] },
+    { name: "Flamingo Rd", pts: [[36.1162,-115.1800],[36.1162,-115.1600]] },
+    { name: "Sands Ave", pts: [[36.1215,-115.1716],[36.1215,-115.1600]] },
+    { name: "Koval Ln", pts: [[36.1000,-115.1652],[36.1265,-115.1652]] },
+  ];
+
+  /* ---------------------------------------------------------------- helpers */
+  const $ = (s) => document.querySelector(s);
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else if (k === "style") n.setAttribute("style", attrs[k]);
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2), attrs[k]);
+      else if (attrs[k] !== null && attrs[k] !== undefined && attrs[k] !== false) n.setAttribute(k, attrs[k]);
+    }
+    for (const c of kids) if (c !== null && c !== undefined && c !== false) n.append(c);
+    return n;
+  };
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const sv = (tag, attrs, text) => {
+    const n = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (text !== undefined) n.textContent = text;
+    return n;
+  };
+  const toMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
+  const fmt = (min) => {
+    min = Math.round(min);
+    let h = Math.floor(min / 60), m = ((min % 60) + 60) % 60;
+    const ap = h >= 12 ? "pm" : "am";
+    h = h % 12 || 12;
+    return h + ":" + String(m).padStart(2, "0") + ap;
+  };
+  const dur = (m) => (m >= 60 ? Math.floor(m / 60) + "h " + (m % 60 ? (m % 60) + "m" : "").trim() : m + " min").trim();
+  const cssVar = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const uid = () => Math.random().toString(36).slice(2, 10);
+
+  function haversine(a, b) {
+    const R = 6371000, r = Math.PI / 180;
+    const dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
+    const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  const miles = (m) => (m / 1609.34).toFixed(m < 1609 ? 2 : 1) + " mi";
+
+  /* ------------------------------------------------------------ travel model */
+  // A place is {kind:"venue"|"hotel", key}
+  function placeOf(p) { return p.kind === "venue" ? VENUES[p.key] : HOTELS[p.key]; }
+  function placeName(p) { return p.kind === "venue" ? VENUES[p.key].name : HOTELS[p.key].name; }
+  function sameProperty(a, b) {
+    // staying at a campus hotel → leg to that venue is internal
+    return a.key === b.key;
+  }
+  function isRush(depart) {
+    return (depart >= 450 && depart <= 540) || (depart >= 990 && depart <= 1080);
+  }
+
+  function travelOptions(a, b, departMin) {
+    const pace = state.pace;
+    const A = placeOf(a), B = placeOf(b);
+    const dist = haversine(A, B);
+    const opts = [];
+    const rush = isRush(departMin);
+    if (sameProperty(a, b)) {
+      const inside = (b.kind === "venue" ? VENUES[b.key].inside : 5);
+      opts.push({ mode: "walk", min: Math.round(inside * pace), note: a.kind === "hotel" ? "From your room" : "Same venue" });
+      return { dist: 0, opts, rush: false };
+    }
+    if (a.kind === "venue" && b.kind === "venue") {
+      const k = [a.key, b.key].sort((x, y) => CAMPUS.indexOf(x) - CAMPUS.indexOf(y)).join("-");
+      const pair = PAIRS[k] || PAIRS[[b.key, a.key].join("-")] || PAIRS[[a.key, b.key].join("-")];
+      if (pair) {
+        opts.push({ mode: "walk", min: Math.round(pair[0] * pace) });
+        if (pair[1] !== null) opts.push({ mode: "shuttle", min: pair[1] + (rush ? 10 : 0), note: rush ? "+10 rush" : "" });
+      }
+    }
+    if (!opts.length) {
+      // generic estimate: route factor 1.35, ~75 m/min on crowded sidewalks, plus getting through the building
+      const inside = (b.kind === "venue" ? VENUES[b.key].inside : 4) + (a.kind === "venue" ? 3 : 4);
+      opts.push({ mode: "walk", min: Math.round((dist * 1.35 / 75 + inside) * pace) });
+    }
+    // monorail
+    const near = (P) => MONORAIL.map((s, i) => ({ i, d: haversine(P, s) })).sort((x, y) => x.d - y.d)[0];
+    const sa = near(A), sb = near(B);
+    if (sa.i !== sb.i && sa.d < 700 && sb.d < 700) {
+      const walkBits = ((sa.d + sb.d) * 1.3 / 75) * pace + 4; // include walking inside to platforms
+      const ride = Math.abs(sa.i - sb.i) * 2.5 + 6;           // hops + average wait
+      const inside = b.kind === "venue" ? Math.round(VENUES[b.key].inside / 2) : 0;
+      const m = Math.round(walkBits + ride + inside);
+      const best = Math.min(...opts.map((o) => o.min));
+      if (m < best + 5) opts.push({ mode: "monorail", min: m, note: MONORAIL[sa.i].name + " → " + MONORAIL[sb.i].name });
+    }
+    // rideshare / taxi as a fallback for long legs
+    if (dist > 900) {
+      const inside = b.kind === "venue" ? VENUES[b.key].inside : 3;
+      opts.push({ mode: "rideshare", min: Math.round(15 + (dist * 1.4 / 1000) * 3 + inside + (rush ? 10 : 0)), note: "pickup lines run long" });
+    }
+    return { dist, opts, rush };
+  }
+
+  function pick(res) {
+    const by = (m) => res.opts.find((o) => o.mode === m);
+    const nonCar = res.opts.filter((o) => o.mode !== "rideshare");
+    const fastest = nonCar.reduce((a, b) => (b.min < a.min ? b : a), nonCar[0]);
+    if (state.pref === "walk") { const w = by("walk"); return w && w.min <= fastest.min + 20 ? w : fastest; }
+    if (state.pref === "shuttle") return by("shuttle") || fastest;
+    return fastest;
+  }
+
+  const MODE_LABEL = { walk: "Walk", shuttle: "Shuttle", monorail: "Monorail", rideshare: "Taxi / rideshare" };
+
+  /* ------------------------------------------------------------------ state */
+  const EXAMPLES = [
+    { day: "2026-11-30", start: "10:00", end: "11:00", title: "Builders' session: Serverless patterns", venue: "WYN", room: "Level 1, Lafite 4" },
+    { day: "2026-11-30", start: "11:30", end: "12:30", title: "Chalk talk: Multi-account security", venue: "CFO", room: "Level 1, Summit 232" },
+    { day: "2026-11-30", start: "13:00", end: "15:00", title: "Workshop: Build an agent with Amazon Bedrock", venue: "MGM", room: "Level 3, Premier 312" },
+    { day: "2026-11-30", start: "15:15", end: "16:15", title: "Breakout: Cost optimization at scale", venue: "VEN", room: "Level 4, Lando 4301" },
+    { day: "2026-12-01", start: "08:00", end: "10:30", title: "Keynote", venue: "VEN", room: "Venetian Expo" },
+    { day: "2026-12-01", start: "11:00", end: "12:00", title: "Breakout: Data lakes on Amazon S3", venue: "CPL", room: "Forum Ballroom" },
+    { day: "2026-12-01", start: "13:00", end: "14:00", title: "Lunch and Expo", venue: "VEN", room: "Expo Hall" },
+    { day: "2026-12-01", start: "14:00", end: "15:00", title: "Chalk talk: Event-driven architecture", venue: "ENC", room: "Level 1, Chorus" },
+  ].map((s) => Object.assign({ id: uid(), example: true }, s));
+
+  let state = {
+    hotel: "LNQ", pref: "fastest", buffer: 10, pace: 1,
+    sessions: EXAMPLES, updatedAt: 0, day: null, sel: null,
+  };
+  const LS = "rcc-plan-v1";
+  function persistable() { return { hotel: state.hotel, pref: state.pref, buffer: state.buffer, pace: state.pace, sessions: state.sessions, updatedAt: state.updatedAt }; }
+  function applyPlan(p) {
+    if (!p || !Array.isArray(p.sessions)) return;
+    state.hotel = HOTELS[p.hotel] ? p.hotel : state.hotel;
+    state.pref = ["fastest", "walk", "shuttle"].includes(p.pref) ? p.pref : state.pref;
+    state.buffer = Number.isFinite(+p.buffer) ? +p.buffer : state.buffer;
+    state.pace = [0.85, 1, 1.25].includes(+p.pace) ? +p.pace : state.pace;
+    state.sessions = p.sessions.filter((s) => s && VENUES[s.venue] && /^\d\d:\d\d$/.test(s.start) && /^\d\d:\d\d$/.test(s.end) && DAYS.some((d) => d.d === s.day))
+      .map((s) => ({ id: String(s.id || uid()), day: s.day, start: s.start, end: s.end, title: String(s.title || "Untitled session").slice(0, 200), venue: s.venue, room: String(s.room || "").slice(0, 120), example: !!s.example }));
+    state.updatedAt = +p.updatedAt || 0;
+  }
+  try { const raw = localStorage.getItem(LS); if (raw) applyPlan(JSON.parse(raw)); } catch (e) {}
+
+  let dbRef = null, saveTimer = null, writing = false, pendingWrite = false;
+  function save() {
+    state.updatedAt = Date.now();
+    try { localStorage.setItem(LS, JSON.stringify(persistable())); } catch (e) {}
+    if (!dbRef) return;
+    clearTimeout(saveTimer);
+    setChip("saving", "Saving…");
+    saveTimer = setTimeout(flush, 700);
+  }
+  async function flush() {
+    if (!dbRef) return;
+    if (writing) { pendingWrite = true; return; }
+    writing = true;
+    try { await dbRef.set(persistable()); setChip("cloud", "Saved to your account"); }
+    catch (e) { setChip("local", "Saved in this browser"); if (e && e.code === "invalid_argument") dbRef = null; }
+    writing = false;
+    if (pendingWrite) { pendingWrite = false; flush(); }
+  }
+  function setChip(st, txt) { const c = $("#savechip"); c.dataset.state = st; c.textContent = txt; }
+
+  async function connectCloud() {
+    if (!window.claude || typeof window.claude.use !== "function") return;
+    try {
+      const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      dbRef = db.collection("data/users/" + id).doc("plan");
+      const t = setTimeout(() => setChip("local", "Saved in this browser · account sync not reachable yet"), 10000);
+      dbRef.onSnapshot((snap) => {
+        if (snap.metadata && snap.metadata.hasPendingWrites) return;
+        if (!snap.metadata || !snap.metadata.fromCache) clearTimeout(t);
+        if (snap.exists) {
+          const p = snap.data();
+          if ((+p.updatedAt || 0) > state.updatedAt) {
+            applyPlan(p);
+            try { localStorage.setItem(LS, JSON.stringify(persistable())); } catch (e) {}
+            renderAll();
+          }
+          setChip("cloud", "Saved to your account");
+        } else if (state.updatedAt > 0) {
+          flush(); // first visit with cloud: upload what this browser has
+        } else {
+          setChip("cloud", "Saved to your account");
+        }
+      }, () => { clearTimeout(t); setChip("local", "Saved in this browser"); dbRef = null; });
+    } catch (e) {}
+    try {
+      const dl = await window.claude.use("downloads");
+      if (dl) { downloads = dl; $("#ics").hidden = false; }
+    } catch (e) {}
+  }
+  let downloads = null;
+
+  /* ------------------------------------------------------------- the plan */
+  function vegasNow() {
+    const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+    const g = (t) => parts.find((p) => p.type === t).value;
+    return { date: g("year") + "-" + g("month") + "-" + g("day"), min: +g("hour") * 60 + +g("minute") };
+  }
+
+  function dayPlan(day) {
+    const list = state.sessions.filter((s) => s.day === day).sort((a, b) => toMin(a.start) - toMin(b.start) || toMin(a.end) - toMin(b.end));
+    const legs = [];
+    const hotel = { kind: "hotel", key: state.hotel };
+    if (!list.length) return { list, legs, worst: null };
+    // hotel -> first
+    const first = list[0];
+    legs.push(makeLeg(hotel, { kind: "venue", key: first.venue }, null, first, null));
+    for (let i = 1; i < list.length; i++) {
+      const a = list[i - 1], b = list[i];
+      legs.push(makeLeg({ kind: "venue", key: a.venue }, { kind: "venue", key: b.venue }, a, b, toMin(b.start) - toMin(a.end)));
+    }
+    const last = list[list.length - 1];
+    legs.push(makeLeg({ kind: "venue", key: last.venue }, hotel, last, null, null));
+    let worst = null;
+    for (const l of legs) if (l.status === "bad") worst = "bad"; else if (l.status === "warn" && worst !== "bad") worst = "warn";
+    return { list, legs, worst };
+  }
+
+  function makeLeg(from, to, prev, next, gap) {
+    const depart = prev ? toMin(prev.end) : next ? toMin(next.start) - 60 : 0;
+    const res = travelOptions(from, to, depart);
+    const best = pick(res);
+    const leg = { from, to, prev, next, gap, res, best, status: "ok" };
+    if (next) leg.leaveBy = toMin(next.start) - best.min - state.buffer;
+    if (gap !== null) {
+      if (gap < 0) leg.status = "bad", leg.overlap = true;
+      else if (gap < best.min) leg.status = "bad";
+      else if (gap < best.min + state.buffer) leg.status = "warn";
+    }
+    return leg;
+  }
+
+  /* ---------------------------------------------------------------- render */
+  function renderSettings() {
+    const h = $("#hotel");
+    if (!h.options.length) {
+      const groups = { "Campus hotels": ["VEN", "PAL", "WYN", "ENC", "CPL", "MGM"], "Other Strip hotels": Object.keys(HOTELS).filter((k) => !["VEN", "PAL", "WYN", "ENC", "CPL", "MGM"].includes(k)) };
+      for (const g in groups) {
+        const og = el("optgroup", { label: g });
+        groups[g].forEach((k) => og.append(el("option", { value: k, text: HOTELS[k].name })));
+        h.append(og);
+      }
+    }
+    h.value = state.hotel;
+    document.querySelectorAll("#pref button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === state.pref)));
+    $("#buffer").value = state.buffer;
+    $("#pace").value = String(state.pace);
+    const fd = $("#f-day"), fv = $("#f-venue");
+    if (!fd.options.length) {
+      DAYS.forEach((d) => fd.append(el("option", { value: d.d, text: d.n + " " + d.l })));
+      CAMPUS.forEach((k) => fv.append(el("option", { value: k, text: VENUES[k].full })));
+    }
+    if (!editing) fd.value = state.day;
+  }
+
+  function renderDays() {
+    const nav = $("#days"); nav.textContent = "";
+    for (const d of DAYS) {
+      const p = dayPlan(d.d);
+      const b = el("button", { class: "day", type: "button", "aria-pressed": String(d.d === state.day), onclick: () => { state.day = d.d; state.sel = null; renderAll(); } },
+        el("span", { class: "dn", text: d.n }),
+        el("span", { class: "dd", text: d.l }),
+        el("span", { class: "dc", text: p.list.length ? p.list.length + (p.list.length === 1 ? " session" : " sessions") : "Free" }),
+        p.worst && p.worst !== "ok" ? el("span", { class: "flag " + p.worst, title: p.worst === "bad" ? "A connection won't work" : "A tight connection" }) : null);
+      nav.append(b);
+    }
+  }
+
+  function renderStrip(plan) {
+    const box = $("#daystrip"); box.textContent = "";
+    const S = 7 * 60, E = 21 * 60;
+    let lo = S, hi = E;
+    plan.list.forEach((s) => { lo = Math.min(lo, Math.floor(toMin(s.start) / 60) * 60); hi = Math.max(hi, Math.ceil(toMin(s.end) / 60) * 60); });
+    const pct = (m) => ((m - lo) / (hi - lo)) * 100 + "%";
+    for (let h = lo; h <= hi; h += 60) {
+      if ((h / 60) % 2 && hi - lo > 600) continue;
+      box.append(el("span", { class: "tick", style: "left:" + pct(h), text: fmt(h).replace(":00", "") }));
+    }
+    plan.legs.forEach((l) => {
+      if (!l.prev || !l.next) return;
+      const st = toMin(l.prev.end);
+      box.append(el("span", { class: "trv", style: `left:${pct(st)};width:calc(${((l.best.min) / (hi - lo)) * 100}%);background:var(--${l.status === "ok" ? "ok" : l.status === "warn" ? "warn" : "bad"})`, title: "Travel" }));
+    });
+    plan.list.forEach((s) => {
+      const w = ((toMin(s.end) - toMin(s.start)) / (hi - lo)) * 100;
+      box.append(el("span", { class: "blk", style: `left:${pct(toMin(s.start))};width:calc(${w}% - 2px);background:var(${VENUES[s.venue].color})`, text: VENUES[s.venue].short }));
+    });
+    const now = vegasNow();
+    if (now.date === state.day && now.min >= lo && now.min <= hi) box.append(el("span", { class: "nowline", style: "left:" + pct(now.min) }));
+  }
+
+  function legNode(l, idx) {
+    const selected = state.sel === idx;
+    const statusTxt = l.overlap ? "Overlaps" : l.status === "bad" ? "Won't make it" : l.status === "warn" ? "Tight" : "OK";
+    const row1 = el("div", { class: "row1" },
+      el("b", { text: MODE_LABEL[l.best.mode] + " " + l.best.min + " min" }),
+      el("span", { text: placeName(l.from) + " → " + placeName(l.to) }),
+      l.res.dist ? el("span", { class: "muted", text: miles(l.res.dist) + " straight-line" }) : null,
+      l.gap !== null ? el("span", { class: "pill " + l.status, text: statusTxt }) : null);
+    const bits = [];
+    if (l.gap !== null && !l.overlap) bits.push("Gap " + dur(l.gap));
+    if (l.overlap) bits.push("Sessions overlap by " + dur(-l.gap));
+    if (l.next) bits.push("Leave by " + fmt(l.leaveBy));
+    if (!l.prev && l.next) bits[0] = "Leave your hotel by " + fmt(l.leaveBy);
+    if (l.prev && !l.next) bits.push("Back at the hotel around " + fmt(toMin(l.prev.end) + l.best.min));
+    const opts = el("div", { class: "opts" });
+    l.res.opts.forEach((o) => opts.append(el("span", null, el("b", { text: MODE_LABEL[o.mode] }), " " + o.min + " min" + (o.note ? " (" + o.note + ")" : ""))));
+    const box = el("button", { class: "legbox", type: "button", "data-sel": String(selected), "aria-label": "Highlight this leg on the map", onclick: () => { state.sel = selected ? null : idx; renderPlan(); } },
+      row1, el("div", { text: bits.join(" · ") }), opts);
+    return el("div", { class: "leg" }, el("div", { class: "rail" }, el("span")), box);
+  }
+
+  function stopNode(s) {
+    const v = VENUES[s.venue];
+    return el("div", { class: "stop" },
+      el("div", { class: "t" }, el("time", { text: fmt(toMin(s.start)) }), el("span", { class: "end", text: fmt(toMin(s.end)) })),
+      el("div", { class: "card", style: "--vc:var(" + v.color + ")" },
+        el("div", { class: "ttl", text: s.title }),
+        el("div", { class: "meta" },
+          el("span", { class: "vtag", text: v.name }),
+          s.room ? el("span", { text: s.room }) : null,
+          s.example ? el("span", { class: "example", text: "Example" }) : null),
+        el("div", { class: "acts" },
+          el("button", { type: "button", text: "Edit", onclick: () => startEdit(s) }),
+          el("button", { type: "button", text: "Remove", onclick: () => { state.sessions = state.sessions.filter((x) => x.id !== s.id); state.sel = null; save(); renderAll(); } }))));
+  }
+
+  function renderPlan() {
+    const plan = dayPlan(state.day);
+    const it = $("#itin"); it.textContent = "";
+    const d = DAYS.find((x) => x.d === state.day);
+    if (!plan.list.length) {
+      it.append(el("div", { class: "empty" }, el("p", { text: "Nothing scheduled on " + d.n + " " + d.l + "." }), el("p", { class: "small", text: "Add a session below, or paste a few from the session catalog." })));
+      $("#itinsum").textContent = "";
+    } else {
+      it.append(legNode(plan.legs[0], 0));
+      plan.list.forEach((s, i) => { it.append(stopNode(s)); it.append(legNode(plan.legs[i + 1], i + 1)); });
+      const walkMin = plan.legs.reduce((t, l) => t + l.best.min, 0);
+      const dist = plan.legs.reduce((t, l) => t + l.res.dist, 0);
+      const issues = plan.legs.filter((l) => l.status !== "ok").length;
+      $("#itinsum").textContent = d.n + " " + d.l + " · " + dur(walkMin) + " in transit · " + miles(dist * 1.3) + " est. on foot" + (issues ? " · " + issues + (issues === 1 ? " connection" : " connections") + " to check" : "");
+    }
+    renderStrip(plan);
+    renderMap(plan);
+  }
+
+  /* map */
+  function renderMap(plan) {
+    const svg = $("#map"); svg.textContent = "";
+    const pts = CAMPUS.map((k) => VENUES[k]).concat([HOTELS[state.hotel]]);
+    let la0 = Math.min(...pts.map((p) => p.lat)) - 0.004, la1 = Math.max(...pts.map((p) => p.lat)) + 0.004;
+    let lo0 = Math.min(...pts.map((p) => p.lon)) - 0.006, lo1 = Math.max(...pts.map((p) => p.lon)) + 0.006;
+    const k = Math.cos(36.115 * Math.PI / 180);
+    const W = 420, H = Math.round(W * (la1 - la0) / ((lo1 - lo0) * k));
+    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    const X = (lon) => ((lon - lo0) / (lo1 - lo0)) * W;
+    const Y = (lat) => ((la1 - lat) / (la1 - la0)) * H;
+    const P = (p) => [X(p.lon), Y(p.lat)];
+    const path = (arr) => arr.map((q, i) => (i ? "L" : "M") + X(q[1]).toFixed(1) + " " + Y(q[0]).toFixed(1)).join(" ");
+    const col = (v) => cssVar(v);
+
+    svg.append(sv("rect", { x: 0, y: 0, width: W, height: H, fill: col("--map-bg") }));
+    STREETS.forEach((s) => {
+      svg.append(sv("path", { d: path(s.pts), stroke: col("--map-road"), "stroke-width": 3, fill: "none", "stroke-linecap": "round" }));
+      const a = s.pts[0], b = s.pts[1];
+      const horiz = a[0] === b[0];
+      const tx = horiz ? Math.max(6, X(lo0) + 6) : X(a[1]) + 5, ty = horiz ? Y(a[0]) - 5 : Math.min(H - 8, Y(Math.max(a[0], la0 + 0.001)) - 4);
+      if (ty > 10 && ty < H - 4) svg.append(sv("text", { x: tx, y: ty, "font-size": 10, fill: col("--muted") }, s.name));
+    });
+    svg.append(sv("path", { d: path(STRIP), stroke: col("--map-strip"), "stroke-width": 7, fill: "none", "stroke-linecap": "round", "stroke-linejoin": "round", opacity: 0.55 }));
+    const lbY = Y(36.1075);
+    if (lbY > 20 && lbY < H - 20) svg.append(sv("text", { x: X(-115.1727) - 8, y: lbY, "font-size": 11, fill: col("--muted"), transform: `rotate(-90 ${X(-115.1727) - 8} ${lbY})`, "text-anchor": "middle", "letter-spacing": "1.5" }, "LAS VEGAS BLVD"));
+    // monorail
+    svg.append(sv("path", { d: path(MONORAIL.map((s) => [s.lat, s.lon])), stroke: col("--map-strip"), "stroke-width": 2, "stroke-dasharray": "5 4", fill: "none" }));
+    MONORAIL.forEach((s) => {
+      const [x, y] = P(s);
+      if (y < 0 || y > H) return;
+      svg.append(sv("rect", { x: x - 3.5, y: y - 3.5, width: 7, height: 7, fill: col("--surface"), stroke: col("--map-strip"), "stroke-width": 1.5 }));
+    });
+    // other hotels faint
+    Object.keys(HOTELS).forEach((key) => {
+      const h = HOTELS[key]; const [x, y] = P(h);
+      if (x < 0 || x > W || y < 0 || y > H) return;
+      if (key === state.hotel) return;
+      svg.append(sv("circle", { cx: x, cy: y, r: 2.2, fill: col("--v-other"), opacity: 0.55 }, ""));
+    });
+    // north arrow + scale
+    svg.append(sv("text", { x: W - 18, y: 22, "font-size": 13, "text-anchor": "middle", fill: col("--muted"), "font-weight": 600 }, "N"));
+    svg.append(sv("path", { d: `M${W - 18} 26 l-5 12 l5 -3 l5 3 z`, fill: col("--muted") }));
+    const half = 804.67, px = (half / ((lo1 - lo0) * k * 111320)) * W;
+    svg.append(sv("path", { d: `M12 ${H - 14} h${px.toFixed(1)}`, stroke: col("--muted"), "stroke-width": 2 }));
+    svg.append(sv("text", { x: 12, y: H - 19, "font-size": 10, fill: col("--muted") }, "½ mile"));
+
+    // route
+    const legs = plan.legs;
+    const statusCol = { ok: col("--ok"), warn: col("--warn"), bad: col("--bad") };
+    const hotelP = { kind: "hotel", key: state.hotel };
+    const routeLayer = sv("g", {});
+    legs.forEach((l, i) => {
+      if (sameProperty(l.from, l.to)) return;
+      const [x1, y1] = P(placeOf(l.from)), [x2, y2] = P(placeOf(l.to));
+      const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1;
+      const len = Math.hypot(dx, dy) || 1, bend = Math.min(40, len * 0.18) * (i % 2 ? 1 : -1);
+      const cx = mx - (dy / len) * bend, cy = my + (dx / len) * bend;
+      const isEnd = !l.prev || !l.next;
+      const sel = state.sel === i;
+      const dim = state.sel !== null && !sel;
+      routeLayer.append(sv("path", {
+        d: `M${x1.toFixed(1)} ${y1.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}`,
+        stroke: isEnd ? col("--muted") : statusCol[l.status], "stroke-width": sel ? 5 : 3, fill: "none",
+        "stroke-dasharray": isEnd ? "2 5" : "none", "stroke-linecap": "round", opacity: dim ? 0.18 : 0.95,
+      }));
+      if (!isEnd || sel) {
+        const lx = 0.25 * x1 + 0.5 * cx + 0.25 * x2, ly = 0.25 * y1 + 0.5 * cy + 0.25 * y2;
+        const g = sv("g", { opacity: dim ? 0.25 : 1 });
+        const t = l.best.min + "m";
+        g.append(sv("rect", { x: lx - 15, y: ly - 9, width: 30, height: 17, rx: 8, fill: col("--surface"), stroke: isEnd ? col("--muted") : statusCol[l.status], "stroke-width": 1.5 }));
+        g.append(sv("text", { x: lx, y: ly + 4, "font-size": 11, "text-anchor": "middle", fill: col("--ink"), "font-weight": 600 }, t));
+        routeLayer.append(g);
+      }
+    });
+    svg.append(routeLayer);
+
+    // venues
+    const order = {}; plan.list.forEach((s, i) => { (order[s.venue] = order[s.venue] || []).push(i + 1); });
+    CAMPUS.forEach((key) => {
+      const v = VENUES[key]; const [x, y] = P(v);
+      const c = col(v.color);
+      const used = !!order[key];
+      const g = sv("g", {});
+      g.append(sv("circle", { cx: x, cy: y, r: used ? 11 : 8, fill: c, stroke: col("--surface"), "stroke-width": 2.5, opacity: used ? 1 : 0.75 }));
+      if (used) g.append(sv("text", { x: x, y: y + 4, "font-size": order[key].length > 2 ? 8.5 : 11, "text-anchor": "middle", fill: "#fff", "font-weight": 700 }, order[key].length > 2 ? order[key].length + "×" : order[key].join(",")));
+      const below = key === "CPL";
+      const label = sv("text", { x: below ? x : x + 15, y: below ? y + 26 : y + 4.5, "font-size": 14, "font-weight": 600, "text-anchor": below ? "middle" : "start", fill: col("--ink"), stroke: col("--map-bg"), "stroke-width": 3.5, "paint-order": "stroke" }, v.name);
+      g.append(label);
+      svg.append(g);
+    });
+    // hotel
+    const h = HOTELS[state.hotel]; const [hx, hy] = P(h);
+    const hg = sv("g", {});
+    hg.append(sv("rect", { x: hx - 7, y: hy - 7, width: 14, height: 14, rx: 2, fill: col("--ink"), stroke: col("--surface"), "stroke-width": 2, transform: `rotate(45 ${hx} ${hy})` }));
+    const campusHotel = ["VEN", "WYN", "ENC", "CPL", "MGM"].includes(state.hotel);
+    hg.append(sv("text", { x: hx - 13, y: hy + (campusHotel ? 20 : 4.5), "font-size": 12, "text-anchor": "end", fill: col("--ink"), stroke: col("--map-bg"), "stroke-width": 3.5, "paint-order": "stroke", "font-weight": 600 }, "Your hotel" + (campusHotel ? "" : " · " + h.name)));
+    svg.append(hg);
+    void hotelP;
+  }
+
+  function renderMatrix() {
+    const t = $("#matrix"); t.textContent = "";
+    const head = el("tr", null, el("th", { text: "" }));
+    CAMPUS.forEach((k) => head.append(el("th", { scope: "col", style: "color:var(" + VENUES[k].color + ")", text: VENUES[k].name })));
+    t.append(el("thead", null, head));
+    const tb = el("tbody");
+    CAMPUS.forEach((a) => {
+      const tr = el("tr", null, el("th", { scope: "row", style: "color:var(" + VENUES[a].color + ")", text: VENUES[a].name }));
+      CAMPUS.forEach((b) => {
+        if (a === b) { tr.append(el("td", { class: "same", text: "—" })); return; }
+        const r = travelOptions({ kind: "venue", key: a }, { kind: "venue", key: b }, 720);
+        const w = r.opts.find((o) => o.mode === "walk"), s = r.opts.find((o) => o.mode === "shuttle");
+        tr.append(el("td", null, el("span", { class: "w", text: w ? w.min + "′ walk" : "" }), el("span", { class: "s", text: s ? s.min + "′ shuttle" : "walk it" })));
+      });
+      tb.append(tr);
+    });
+    t.append(tb);
+  }
+
+  function renderVenues() {
+    const box = $("#venues"); if (box.childElementCount) return;
+    CAMPUS.forEach((k) => {
+      const v = VENUES[k];
+      const ul = el("ul"); v.tips.forEach((t) => ul.append(el("li", { text: t })));
+      box.append(el("article", { class: "vcard", style: "--vc:var(" + v.color + ")" }, el("h3", { text: v.full }), ul));
+    });
+  }
+
+  function renderNow() {
+    const now = vegasNow();
+    $("#clock").textContent = fmt(now.min) + " PT";
+    const msg = $("#nowmsg"); msg.textContent = "";
+    const idx = DAYS.findIndex((d) => d.d === now.date);
+    if (idx === -1) {
+      const before = now.date < DAYS[0].d;
+      const total = state.sessions.length, ex = state.sessions.filter((s) => s.example).length;
+      msg.append(el("strong", { text: before ? "Before the conference" : "re:Invent 2026 has wrapped" }), el("br"),
+        el("span", { text: ex ? "These are example sessions. Add your own below or paste them from the catalog, then remove the examples." : total + " sessions planned. During the week this panel tells you when to leave for your next one." }));
+      return;
+    }
+    const plan = dayPlan(now.date);
+    const cur = plan.list.find((s) => toMin(s.start) <= now.min && toMin(s.end) > now.min);
+    const nextLeg = plan.legs.find((l) => l.next && toMin(l.next.start) > now.min);
+    if (!plan.list.length) { msg.append(el("strong", { text: "Nothing scheduled today" }), el("br"), el("span", { text: "Enjoy the Expo, or add a session below." })); return; }
+    if (nextLeg) {
+      const lb = nextLeg.leaveBy, mins = lb - now.min;
+      const s = nextLeg.next;
+      const head = mins <= 0 ? "Leave now for " + s.title : "Leave in " + dur(mins) + " for " + s.title;
+      msg.append(el("strong", { text: head }), el("br"),
+        el("span", { text: (cur ? "Now: " + cur.title + " · " : "") + MODE_LABEL[nextLeg.best.mode] + " " + nextLeg.best.min + " min from " + placeName(nextLeg.from) + " to " + VENUES[s.venue].name + (s.room ? " (" + s.room + ")" : "") + " · starts " + fmt(toMin(s.start)) }));
+    } else if (cur) {
+      msg.append(el("strong", { text: "In: " + cur.title }), el("br"), el("span", { text: "Last session today. Ends " + fmt(toMin(cur.end)) + "." }));
+    } else {
+      msg.append(el("strong", { text: "Done for today" }), el("br"), el("span", { text: "Head back to " + HOTELS[state.hotel].name + "." }));
+    }
+  }
+
+  function renderAll() {
+    if (!state.day) {
+      const now = vegasNow();
+      const firstWith = DAYS.find((d) => state.sessions.some((s) => s.day === d.d));
+      state.day = DAYS.some((d) => d.d === now.date) ? now.date : (firstWith ? firstWith.d : DAYS[1].d);
+    }
+    renderSettings(); renderDays(); renderPlan(); renderNow(); renderMatrix(); renderVenues();
+    $("#clear-ex").hidden = !state.sessions.some((s) => s.example);
+  }
+
+  /* --------------------------------------------------------------- editing */
+  let editing = null;
+  function startEdit(s) {
+    editing = s.id;
+    $("#f-title").value = s.title; $("#f-day").value = s.day; $("#f-venue").value = s.venue;
+    $("#f-start").value = s.start; $("#f-end").value = s.end; $("#f-room").value = s.room || "";
+    $("#f-submit").textContent = "Save changes"; $("#f-cancel").hidden = false;
+    $("#add-h").textContent = "Edit session";
+    $("#f-title").focus();
+    $("#addform").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  }
+  function endEdit() {
+    editing = null; $("#addform").reset(); $("#f-start").value = "10:00"; $("#f-end").value = "11:00";
+    $("#f-submit").textContent = "Add to schedule"; $("#f-cancel").hidden = true; $("#add-h").textContent = "Add a session";
+    $("#f-day").value = state.day;
+  }
+  $("#f-cancel").addEventListener("click", endEdit);
+  $("#addform").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const rec = { title: $("#f-title").value.trim() || "Untitled session", day: $("#f-day").value, venue: $("#f-venue").value, start: $("#f-start").value, end: $("#f-end").value, room: $("#f-room").value.trim() };
+    if (toMin(rec.end) <= toMin(rec.start)) { $("#addtoast").style.color = "var(--bad)"; $("#addtoast").textContent = "The end time needs to be after the start time."; return; }
+    $("#addtoast").style.color = "";
+    if (editing) {
+      const s = state.sessions.find((x) => x.id === editing);
+      if (s) Object.assign(s, rec, { example: false });
+      $("#addtoast").textContent = "Saved " + rec.title + ".";
+    } else {
+      state.sessions.push(Object.assign({ id: uid(), example: false }, rec));
+      $("#addtoast").textContent = "Added " + rec.title + " on " + DAYS.find((d) => d.d === rec.day).n + ".";
+    }
+    state.day = rec.day; state.sel = null;
+    endEdit(); save(); renderAll();
+  });
+
+  $("#hotel").addEventListener("change", (e) => { state.hotel = e.target.value; save(); renderAll(); });
+  document.querySelectorAll("#pref button").forEach((b) => b.addEventListener("click", () => { state.pref = b.dataset.v; save(); renderAll(); }));
+  $("#buffer").addEventListener("change", (e) => { const v = Math.max(0, Math.min(60, Math.round(+e.target.value || 0))); state.buffer = v; save(); renderAll(); });
+  $("#pace").addEventListener("change", (e) => { state.pace = +e.target.value; save(); renderAll(); });
+  $("#clear-ex").addEventListener("click", () => {
+    state.sessions = state.sessions.filter((s) => !s.example); state.sel = null; save(); renderAll();
+    $("#pastetoast").textContent = "Example sessions removed.";
+  });
+
+  /* ------------------------------------------------------------ paste parse */
+  const WD = { sun: "2026-11-29", mon: "2026-11-30", tue: "2026-12-01", wed: "2026-12-02", thu: "2026-12-03", fri: "2026-12-04" };
+  const VENUE_RX = [
+    ["CFO", /caesars\s*forum|\bforum\b(?!\s*ballroom)|\bcfo\b/i],
+    ["CPL", /caesars\s*palace|\bcaesars\b|\bcpl\b/i],
+    ["ENC", /\bencore\b|\benc\b/i],
+    ["WYN", /\bwynn\b|\bwyn\b/i],
+    ["MGM", /\bmgm\b/i],
+    ["VEN", /venetian|palazzo|\bven\b|\bexpo\b/i],
+  ];
+  function parseTime(str, apFallback) {
+    const m = /(\d{1,2})(?::(\d{2}))?\s*([ap])?\.?\s*m?\.?/i.exec(str.trim());
+    if (!m) return null;
+    let h = +m[1]; const mi = +(m[2] || 0); const ap = (m[3] || apFallback || "").toLowerCase();
+    if (h > 23 || mi > 59) return null;
+    if (ap === "p" && h < 12) h += 12;
+    if (ap === "a" && h === 12) h = 0;
+    if (!ap && h < 7) h += 12;
+    return h * 60 + mi;
+  }
+  const hhmm = (m) => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+  function parseBlock(block) {
+    const text = block.replace(/\s+\|\s+/g, " | ");
+    let day = null;
+    const wd = /\b(sun|mon|tue|wed|thu|fri)[a-z]*\.?/i.exec(text);
+    if (wd) day = WD[wd[1].toLowerCase()];
+    const md = /\b(nov(?:ember)?\.?\s*(29|30)|dec(?:ember)?\.?\s*([1-4])\b|\b(11|12)\/(\d{1,2})\b)/i.exec(text);
+    if (md) {
+      if (md[2]) day = "2026-11-" + md[2];
+      else if (md[3]) day = "2026-12-0" + md[3];
+      else if (md[4]) { const dd = String(+md[5]).padStart(2, "0"); const cand = "2026-" + md[4] + "-" + dd; if (DAYS.some((d) => d.d === cand)) day = cand; }
+    }
+    const tr = /(\d{1,2}(?::\d{2})?\s*(?:[ap]\.?m?\.?)?)\s*(?:-|–|—|to)\s*(\d{1,2}(?::\d{2})?\s*(?:[ap]\.?m?\.?)?)/i.exec(text);
+    let start = null, end = null;
+    if (tr) {
+      const apEnd = (/([ap])/i.exec(tr[2]) || [])[1];
+      end = parseTime(tr[2]);
+      start = parseTime(tr[1], /[ap]/i.test(tr[1]) ? null : apEnd);
+      if (start !== null && end !== null && end <= start && !/[ap]/i.test(tr[1])) start -= 12 * 60;
+    } else {
+      const one = /\b(\d{1,2}:\d{2}\s*(?:[ap]\.?m?\.?)?|\d{1,2}\s*[ap]\.?m\.?)/i.exec(text);
+      if (one) { start = parseTime(one[1]); end = start !== null ? start + 60 : null; }
+    }
+    let venue = null, venueLine = "";
+    for (const [k, rx] of VENUE_RX) { const m = rx.exec(text); if (m) { venue = k; break; } }
+    const lines = block.split(/\n/).map((l) => l.trim()).filter(Boolean);
+    let room = "";
+    let title = "";
+    for (const line of lines) {
+      const hasVenue = VENUE_RX.some(([k, rx]) => k === venue && rx.test(line));
+      if (hasVenue && !venueLine) {
+        venueLine = line;
+        const parts = line.split(/\s*[|·•,]\s*/).filter(Boolean);
+        const vi = parts.findIndex((p) => VENUE_RX.find(([k]) => k === venue)[1].test(p));
+        room = parts.filter((p, i) => i > vi && !(lines.length === 1 && i === parts.length - 1) && !/\d{1,2}(:\d{2})?\s*[ap]\.?m|\b(sun|mon|tue|wed|thu|fri)[a-z]*\b/i.test(p)).slice(0, 2).join(", ");
+      }
+    }
+    for (const line of lines) {
+      const stripped = line.replace(tr ? tr[0] : "@@", "").replace(/\b(sun|mon|tue|wed|thu|fri)[a-z]*\.?,?/i, "").replace(/\b(nov|dec)[a-z]*\.?\s*\d{1,2},?/i, "").replace(/\b(PST|PT|PDT)\b/, "").trim();
+      if (line === venueLine && lines.length > 1) continue;
+      if (!stripped || stripped.length < 3) continue;
+      if (/^[\s,|·\-–]*$/.test(stripped)) continue;
+      title = stripped;
+      if (line === venueLine) {
+        const parts = stripped.split(/\s*\|\s*/).filter((p) => !VENUE_RX.some(([, rx]) => rx.test(p)) && !(room && room.includes(p)));
+        title = parts.pop() || stripped;
+      }
+      break;
+    }
+    title = title.replace(/^[\s|·\-–,]+|[\s|·\-–,]+$/g, "");
+    if (!day || start === null || end === null || !venue) return { ok: false, why: !day ? "day" : start === null ? "time" : "venue", block: lines[0] || "" };
+    if (end <= start) end = start + 60;
+    return { ok: true, s: { id: uid(), example: false, day, start: hhmm(start), end: hhmm(end), venue, room: room.slice(0, 120), title: (title || "Session at " + VENUES[venue].name).slice(0, 200) } };
+  }
+  $("#paste-go").addEventListener("click", () => {
+    const raw = $("#paste").value.trim(); const toast = $("#pastetoast");
+    if (!raw) { toast.style.color = "var(--bad)"; toast.textContent = "Paste one or more sessions into the box first."; return; }
+    const blocks = raw.split(/\n\s*\n/);
+    const ok = [], bad = [];
+    blocks.forEach((b) => { const r = parseBlock(b); r.ok ? ok.push(r.s) : bad.push(r); });
+    state.sessions.push(...ok);
+    if (ok.length) { state.day = ok[0].day; state.sel = null; save(); renderAll(); }
+    toast.style.color = bad.length ? "var(--warn)" : "";
+    toast.textContent = (ok.length ? "Imported " + ok.length + (ok.length === 1 ? " session." : " sessions.") : "") +
+      (bad.length ? " Couldn't read " + bad.length + ": " + bad.map((b) => "“" + b.block.slice(0, 40) + "” (no " + b.why + " found)").join("; ") : "");
+    if (!bad.length) $("#paste").value = "";
+  });
+
+  /* ---------------------------------------------------------------- export */
+  function itineraryText() {
+    const out = ["re:Invent 2026 plan · staying at " + HOTELS[state.hotel].name, ""];
+    DAYS.forEach((d) => {
+      const p = dayPlan(d.d); if (!p.list.length) return;
+      out.push(d.n.toUpperCase() + " " + d.l);
+      out.push("  Leave hotel by " + fmt(p.legs[0].leaveBy) + " (" + MODE_LABEL[p.legs[0].best.mode].toLowerCase() + " " + p.legs[0].best.min + " min)");
+      p.list.forEach((s, i) => {
+        out.push("  " + fmt(toMin(s.start)) + "–" + fmt(toMin(s.end)) + "  " + s.title + " · " + VENUES[s.venue].name + (s.room ? ", " + s.room : ""));
+        const l = p.legs[i + 1];
+        if (l.next) out.push("      → " + MODE_LABEL[l.best.mode].toLowerCase() + " " + l.best.min + " min to " + VENUES[l.next.venue].name + ", leave by " + fmt(l.leaveBy) + (l.status !== "ok" ? "  [" + (l.status === "bad" ? "WON'T MAKE IT" : "TIGHT") + "]" : ""));
+      });
+      out.push("");
+    });
+    return out.join("\n");
+  }
+  $("#copy-text").addEventListener("click", () => {
+    const txt = itineraryText(); const toast = $("#pastetoast"); toast.style.color = "";
+    const fallback = () => { const ta = $("#paste"); ta.value = txt; ta.focus(); ta.select(); toast.textContent = "Your browser blocked copying. The itinerary is in the box above, selected, ready to copy."; };
+    try { navigator.clipboard.writeText(txt).then(() => { toast.textContent = "Itinerary copied."; }, fallback); } catch (e) { fallback(); }
+  });
+  function ics() {
+    const pad = (n) => String(n).padStart(2, "0");
+    const stamp = (day, m) => { // PST = UTC-8 for the whole event
+      const d = new Date(Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), 0, 0) + (m + 480) * 60000);
+      return d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + "T" + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + "00Z";
+    };
+    const escI = (s) => String(s).replace(/[\\;,]/g, (c) => "\\" + c).replace(/\n/g, "\\n");
+    const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Campus Compass//EN", "CALSCALE:GREGORIAN"];
+    DAYS.forEach((d) => {
+      const p = dayPlan(d.d);
+      p.list.forEach((s, i) => {
+        const inLeg = p.legs[i];
+        lines.push("BEGIN:VEVENT", "UID:" + s.id + "@campus-compass", "DTSTAMP:" + stamp("2026-11-24", 0),
+          "DTSTART:" + stamp(s.day, toMin(s.start)), "DTEND:" + stamp(s.day, toMin(s.end)),
+          "SUMMARY:" + escI(s.title), "LOCATION:" + escI(VENUES[s.venue].full + (s.room ? ", " + s.room : "")),
+          "DESCRIPTION:" + escI("Leave " + placeName(inLeg.from) + " by " + fmt(inLeg.leaveBy) + " (" + MODE_LABEL[inLeg.best.mode].toLowerCase() + " ~" + inLeg.best.min + " min)"),
+          "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + escI("Leave for " + s.title), "TRIGGER:-PT" + (inLeg.best.min + state.buffer) + "M", "END:VALARM",
+          "END:VEVENT");
+      });
+    });
+    lines.push("END:VCALENDAR");
+    return lines.join("\r\n");
+  }
+  $("#ics").addEventListener("click", async () => {
+    const toast = $("#pastetoast"); toast.style.color = "";
+    if (!downloads) return;
+    try { await downloads.save({ filename: "reinvent-2026-plan.ics", data: ics() }); toast.textContent = "Calendar file saved. Each event has a reminder at your leave-by time."; }
+    catch (e) { toast.textContent = "The calendar file wasn't saved."; }
+  });
+
+  /* ------------------------------------------------------------------ boot */
+  renderAll();
+  setInterval(() => { renderNow(); if (vegasNow().date === state.day) renderStrip(dayPlan(state.day)); }, 30000);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderPlan());
+  new MutationObserver(() => renderPlan()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  connectCloud();
+})();
+</script>
+
+</body></html>
