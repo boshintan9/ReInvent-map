@@ -548,7 +548,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
   function setChip(st, txt) { const c = $("#savechip"); c.dataset.state = st; c.textContent = txt; }
 
   async function connectCloud() {
-    if (!window.claude || typeof window.claude.use !== "function") return;
+    if (!window.claude || typeof window.claude.use !== "function") { $("#ics").hidden = false; return; }
     try {
       const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
       if (!db || !user) return;
@@ -574,12 +574,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
         }
       }, () => { clearTimeout(t); setChip("local", "Saved in this browser"); dbRef = null; });
     } catch (e) {}
-    try {
-      const dl = await window.claude.use("downloads");
-      if (dl) { downloads = dl; $("#ics").hidden = false; }
-    } catch (e) {}
   }
-  let downloads = null;
 
   /* ------------------------------------------------------------- the plan */
   function vegasNow() {
@@ -1080,9 +1075,10 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
   }
   $("#ics").addEventListener("click", async () => {
     const toast = $("#pastetoast"); toast.style.color = "";
-    if (!downloads) return;
-    try { await downloads.save({ filename: "reinvent-2026-plan.ics", data: ics() }); toast.textContent = "Calendar file saved. Each event has a reminder at your leave-by time."; }
-    catch (e) { toast.textContent = "The calendar file wasn't saved."; }
+    // Standalone page only: artifacts can't save .ics files.
+    const a = el("a", { href: URL.createObjectURL(new Blob([ics()], { type: "text/calendar" })), download: "reinvent-2026-plan.ics" });
+    document.body.append(a); a.click(); a.remove();
+    toast.textContent = "Calendar file downloaded. Each event has a reminder at your leave-by time.";
   });
 
   /* ------------------------------------------------------------------ boot */
