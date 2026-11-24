@@ -20,6 +20,22 @@
   --map-bg: #e9e7f1;
   --map-road: #b9b4cc;
   --map-strip: #8e86ad;
+  --map-land: #efeee9;
+  --map-bldg: #dcd8e6;
+  --map-bldg-edge: #c4bfd4;
+  --map-bldg-named: #cfc9de;
+  --map-park: #e4e2dc;
+  --map-green: #d3e6cf;
+  --map-water: #b9d4ec;
+  --map-major: #ffffff;
+  --map-major-edge: #c9c4d8;
+  --map-motor: #f2c7a4;
+  --map-minor: #ffffff;
+  --map-service: #f8f7fb;
+  --map-foot: #9a93b5;
+  --map-bridge: #5b3fd6;
+  --map-rail: #6b6390;
+  --map-label: #4a4563;
   --v-ven: #c2410c;
   --v-wyn: #9a6a00;
   --v-enc: #b4237a;
@@ -36,7 +52,7 @@
   :root:not([data-theme="light"]) {
     --bg: #14121f; --surface: #1d1a2c; --surface-2: #272339; --ink: #ecebf4; --muted: #a29eb9;
     --line: #353049; --accent: #9d8bff; --accent-ink: #14121f; --ok: #4cc38a; --warn: #f0a530; --bad: #ff6b74;
-    --map-bg: #1a1728; --map-road: #3a3552; --map-strip: #6d6690;
+    --map-bg: #1a1728; --map-road: #3a3552; --map-strip: #6d6690; --map-land: #1b1928; --map-bldg: #2b2740; --map-bldg-edge: #3a3552; --map-bldg-named: #332e4c; --map-park: #201d2e; --map-green: #1f2d25; --map-water: #1c2c40; --map-major: #4a4466; --map-major-edge: #2a2640; --map-motor: #6a4a3a; --map-minor: #3a3552; --map-service: #2c283e; --map-foot: #6d6690; --map-bridge: #b3a5ff; --map-rail: #a29eb9; --map-label: #c9c5dc;
     --v-ven: #ff8a4c; --v-wyn: #e3b23c; --v-enc: #ff6fbf; --v-cfo: #3cc7d6; --v-cpl: #8aa2ff; --v-mgm: #6fd17a; --v-other: #9692ad;
     color-scheme: dark;
   }
@@ -44,7 +60,7 @@
 :root[data-theme="dark"] {
   --bg: #14121f; --surface: #1d1a2c; --surface-2: #272339; --ink: #ecebf4; --muted: #a29eb9;
   --line: #353049; --accent: #9d8bff; --accent-ink: #14121f; --ok: #4cc38a; --warn: #f0a530; --bad: #ff6b74;
-  --map-bg: #1a1728; --map-road: #3a3552; --map-strip: #6d6690;
+  --map-bg: #1a1728; --map-road: #3a3552; --map-strip: #6d6690; --map-land: #1b1928; --map-bldg: #2b2740; --map-bldg-edge: #3a3552; --map-bldg-named: #332e4c; --map-park: #201d2e; --map-green: #1f2d25; --map-water: #1c2c40; --map-major: #4a4466; --map-major-edge: #2a2640; --map-motor: #6a4a3a; --map-minor: #3a3552; --map-service: #2c283e; --map-foot: #6d6690; --map-bridge: #b3a5ff; --map-rail: #a29eb9; --map-label: #c9c5dc;
   --v-ven: #ff8a4c; --v-wyn: #e3b23c; --v-enc: #ff6fbf; --v-cfo: #3cc7d6; --v-cpl: #8aa2ff; --v-mgm: #6fd17a; --v-other: #9692ad;
   color-scheme: dark;
 }
@@ -144,7 +160,16 @@ textarea { width: 100%; min-height: 150px; font-family: var(--font-mono); font-s
 
 /* map */
 .mapwrap { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
-.map { width: 100%; height: auto; display: block; background: var(--map-bg); border-radius: var(--radius); max-height: 78vh; }
+.mapbox { position: relative; border-radius: var(--radius); overflow: hidden; background: var(--map-land); }
+.map { width: 100%; height: min(76vh, 760px); min-height: 420px; display: block; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.map.dragging { cursor: grabbing; }
+.map.schematic { height: auto; min-height: 0; max-height: 78vh; touch-action: auto; cursor: default; background: var(--map-bg); }
+.mapctl { position: absolute; top: 10px; right: 10px; display: grid; gap: 6px; }
+.mapctl button { width: 36px; height: 36px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 1.1rem; line-height: 1; display: grid; place-items: center; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.mapctl button.wide { width: auto; padding: 0 10px; font-size: .78rem; font-weight: 600; }
+.mapattr { position: absolute; right: 6px; bottom: 4px; font-size: .68rem; color: var(--muted); background: color-mix(in srgb, var(--surface) 80%, transparent); padding: 1px 5px; border-radius: 3px; }
+.mapattr a { color: inherit; }
+.maptip { position: absolute; left: 10px; bottom: 8px; font-size: .72rem; color: var(--muted); background: color-mix(in srgb, var(--surface) 80%, transparent); padding: 1px 6px; border-radius: 3px; }
 .map text { font-family: var(--font-display); }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: .78rem; color: var(--muted); }
 .legend i { display: inline-block; width: 18px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 4px; }
@@ -235,12 +260,24 @@ footer a { color: var(--accent); }
         <h2 id="map-h">The Strip</h2>
         <span class="small muted" id="mapsum">Tap a leg to highlight it</span>
       </div>
-      <svg class="map" id="map" role="img" aria-label="Map of the Las Vegas Strip showing re:Invent venues and today's route"></svg>
+      <div class="mapbox">
+        <svg class="map schematic" id="map" role="img" aria-label="Map of the Las Vegas Strip showing re:Invent venues and today's route"></svg>
+        <div class="mapctl" id="mapctl" hidden>
+          <button type="button" id="zin" aria-label="Zoom in">+</button>
+          <button type="button" id="zout" aria-label="Zoom out">−</button>
+          <button type="button" class="wide" id="zday" title="Fit today's route">Day</button>
+          <button type="button" class="wide" id="zall" title="Show the whole campus">All</button>
+        </div>
+        <span class="maptip" id="maptip" hidden>Drag to pan · scroll or pinch to zoom</span>
+        <span class="mapattr" id="mapattr" hidden>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors</span>
+      </div>
       <div class="legend">
         <span><i style="border-color:var(--ok)"></i>Enough time</span>
         <span><i style="border-color:var(--warn)"></i>Tight</span>
         <span><i style="border-color:var(--bad)"></i>Won't make it</span>
         <span><i class="dash" style="border-color:var(--map-strip)"></i>Monorail</span>
+        <span id="lg-bridge" hidden><i style="border-color:var(--map-bridge)"></i>Pedestrian bridge</span>
+        <span id="lg-ride" hidden><i class="dash" style="border-color:var(--muted)"></i>Shuttle / ride</span>
       </div>
     </section>
   </div>
@@ -317,17 +354,17 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
 
   // Campus venues (2026). lat/lon are the meeting-space side of each property.
   const VENUES = {
-    VEN: { name: "Venetian", full: "The Venetian · Venetian Expo", short: "VEN", color: "--v-ven", lat: 36.1216, lon: -115.1680, inside: 10,
+    VEN: { name: "Venetian", full: "The Venetian · Venetian Expo", short: "VEN", color: "--v-ven", lat: 36.1219, lon: -115.1668, inside: 10,
       tips: ["The biggest venue: keynotes and the Expo have historically been here.", "Session rooms sit on several levels of the Venetian Convention & Expo Center. Allow 10 minutes from the casino to your room.", "Walk to Wynn along the Strip side or through Palazzo."] },
-    WYN: { name: "Wynn", full: "Wynn Las Vegas", short: "WYN", color: "--v-wyn", lat: 36.1268, lon: -115.1652, inside: 6,
+    WYN: { name: "Wynn", full: "Wynn Las Vegas", short: "WYN", color: "--v-wyn", lat: 36.1263, lon: -115.1655, inside: 6,
       tips: ["Meeting space is at the back (east) of the property.", "Connected indoors to Encore; it's a short walk.", "Closest campus venue to the Venetian on foot."] },
-    ENC: { name: "Encore", full: "Encore Las Vegas", short: "ENC", color: "--v-enc", lat: 36.1290, lon: -115.1638, inside: 6,
+    ENC: { name: "Encore", full: "Encore Las Vegas", short: "ENC", color: "--v-enc", lat: 36.1287, lon: -115.1645, inside: 6,
       tips: ["Reach it indoors from Wynn through the shared esplanade.", "Furthest north of the campus venues: going to MGM Grand from here takes the longest trip of the week."] },
-    CFO: { name: "Caesars Forum", full: "Caesars Forum", short: "CFO", color: "--v-cfo", lat: 36.1180, lon: -115.1662, inside: 5,
+    CFO: { name: "Caesars Forum", full: "Caesars Forum", short: "CFO", color: "--v-cfo", lat: 36.1188, lon: -115.1664, inside: 5,
       tips: ["A standalone conference center behind Harrah's and The LINQ, off the Strip.", "Walk through Harrah's or The LINQ and take the pedestrian bridge.", "Harrah's/The LINQ monorail station is a few minutes' walk away."] },
-    CPL: { name: "Caesars Palace", full: "Caesars Palace", short: "CPL", color: "--v-cpl", lat: 36.1170, lon: -115.1760, inside: 8,
+    CPL: { name: "Caesars Palace", full: "Caesars Palace", short: "CPL", color: "--v-cpl", lat: 36.117, lon: -115.1765, inside: 8,
       tips: ["Large property on the west side of the Strip; the conference center is toward the back.", "Cross the Strip by the pedestrian bridges at Flamingo Rd.", "Flamingo/Caesars Palace monorail station is across the Strip, behind the Flamingo."] },
-    MGM: { name: "MGM Grand", full: "MGM Grand Conference Center", short: "MGM", color: "--v-mgm", lat: 36.1015, lon: -115.1655, inside: 12,
+    MGM: { name: "MGM Grand", full: "MGM Grand Conference Center", short: "MGM", color: "--v-mgm", lat: 36.1045, lon: -115.165, inside: 12,
       tips: ["The conference center is at the far east end, a 10–15 minute walk from the Strip entrance.", "It's a long way south of the other venues. Group your MGM sessions on the same day if you can.", "The MGM Grand monorail station is right beside the conference center."] },
   };
   const CAMPUS = ["ENC", "WYN", "VEN", "CFO", "CPL", "MGM"];
@@ -374,13 +411,13 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
   };
 
   const MONORAIL = [
-    { name: "MGM Grand", lat: 36.1020, lon: -115.1662 },
-    { name: "Horseshoe / Paris", lat: 36.1125, lon: -115.1686 },
-    { name: "Flamingo / Caesars Palace", lat: 36.1163, lon: -115.1683 },
-    { name: "Harrah's / The LINQ", lat: 36.1195, lon: -115.1688 },
-    { name: "Convention Center", lat: 36.1318, lon: -115.1527 },
-    { name: "Westgate", lat: 36.1358, lon: -115.1517 },
-    { name: "SAHARA", lat: 36.1427, lon: -115.1578 },
+    { name: "MGM Grand", lat: 36.1014, lon: -115.1663 },
+    { name: "Horseshoe / Paris", lat: 36.1127, lon: -115.1675 },
+    { name: "Flamingo / Caesars Palace", lat: 36.1166, lon: -115.1687 },
+    { name: "Harrah's / The LINQ", lat: 36.1194, lon: -115.1686 },
+    { name: "Convention Center", lat: 36.1307, lon: -115.1546 },
+    { name: "Westgate", lat: 36.1358, lon: -115.1527 },
+    { name: "SAHARA", lat: 36.1424, lon: -115.1546 },
   ];
 
   const STRIP = [[36.0870,-115.1747],[36.1023,-115.1727],[36.1125,-115.1722],[36.1162,-115.1720],[36.1215,-115.1716],[36.1262,-115.1700],[36.1330,-115.1652],[36.1400,-115.1592],[36.1450,-115.1556]];
@@ -448,6 +485,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     const pace = state.pace;
     const A = placeOf(a), B = placeOf(b);
     const dist = haversine(A, B);
+    const rt = routeFor(a, b);
     const opts = [];
     const rush = isRush(departMin);
     if (sameProperty(a, b)) {
@@ -466,12 +504,13 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     if (!opts.length) {
       // generic estimate: route factor 1.35, ~75 m/min on crowded sidewalks, plus getting through the building
       const inside = (b.kind === "venue" ? VENUES[b.key].inside : 4) + (a.kind === "venue" ? 3 : 4);
-      opts.push({ mode: "walk", min: Math.round((dist * 1.35 / 75 + inside) * pace) });
+      const rm = rt ? rt.m : dist * 1.35; // real walking route when the map is loaded
+      opts.push({ mode: "walk", min: Math.round((rm / 75 + inside) * pace) });
     }
     // monorail
     const near = (P) => MONORAIL.map((s, i) => ({ i, d: haversine(P, s) })).sort((x, y) => x.d - y.d)[0];
     const sa = near(A), sb = near(B);
-    if (sa.i !== sb.i && sa.d < 700 && sb.d < 700) {
+    if (Math.abs(sa.i - sb.i) >= 2 && sa.d < 700 && sb.d < 700) {
       const walkBits = ((sa.d + sb.d) * 1.3 / 75) * pace + 4; // include walking inside to platforms
       const ride = Math.abs(sa.i - sb.i) * 2.5 + 6;           // hops + average wait
       const inside = b.kind === "venue" ? Math.round(VENUES[b.key].inside / 2) : 0;
@@ -484,7 +523,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
       const inside = b.kind === "venue" ? VENUES[b.key].inside : 3;
       opts.push({ mode: "rideshare", min: Math.round(15 + (dist * 1.4 / 1000) * 3 + inside + (rush ? 10 : 0)), note: "pickup lines run long" });
     }
-    return { dist, opts, rush };
+    return { dist, opts, rush, walkM: rt ? rt.m : null };
   }
 
   function pick(res) {
@@ -682,7 +721,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     const row1 = el("div", { class: "row1" },
       el("b", { text: MODE_LABEL[l.best.mode] + " " + l.best.min + " min" }),
       el("span", { text: placeName(l.from) + " → " + placeName(l.to) }),
-      l.res.dist ? el("span", { class: "muted", text: miles(l.res.dist) + " straight-line" }) : null,
+      l.res.walkM ? el("span", { class: "muted", text: miles(l.res.walkM) + " on foot" }) : l.res.dist ? el("span", { class: "muted", text: miles(l.res.dist) + " straight-line" }) : null,
       l.gap !== null ? el("span", { class: "pill " + l.status, text: statusTxt }) : null);
     const bits = [];
     if (l.gap !== null && !l.overlap) bits.push("Gap " + dur(l.gap));
@@ -723,16 +762,284 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
       it.append(legNode(plan.legs[0], 0));
       plan.list.forEach((s, i) => { it.append(stopNode(s)); it.append(legNode(plan.legs[i + 1], i + 1)); });
       const walkMin = plan.legs.reduce((t, l) => t + l.best.min, 0);
-      const dist = plan.legs.reduce((t, l) => t + l.res.dist, 0);
+      const dist = plan.legs.reduce((t, l) => t + (l.res.walkM || l.res.dist * 1.3), 0);
       const issues = plan.legs.filter((l) => l.status !== "ok").length;
-      $("#itinsum").textContent = d.n + " " + d.l + " · " + dur(walkMin) + " in transit · " + miles(dist * 1.3) + " est. on foot" + (issues ? " · " + issues + (issues === 1 ? " connection" : " connections") + " to check" : "");
+      $("#itinsum").textContent = d.n + " " + d.l + " · " + dur(walkMin) + " in transit · " + miles(dist) + " if you walked it all" + (issues ? " · " + issues + (issues === 1 ? " connection" : " connections") + " to check" : "");
     }
     renderStrip(plan);
     renderMap(plan);
   }
 
-  /* map */
+  /* ------------------------------------------------- detailed OSM map */
+  let MAP = null;          // loaded strip-map.json
+  let vb = null;           // current viewBox {x,y,w,h} in metres
+  let baseKey = "";        // theme signature the base layer was drawn with
+  let lastPlan = null;
+  let fitKey = "";
+
+  function mp(p) { return [(p.lon - MAP.bbox[1]) * MAP.mx, (MAP.bbox[2] - p.lat) * MAP.my]; }
+  function routeFor(from, to) {
+    if (!MAP || sameProperty(from, to)) return null;
+    let key, rev = false;
+    if (from.kind === "venue" && to.kind === "venue") {
+      const [a, b] = [from.key, to.key];
+      key = a < b ? "v:" + a + ">" + b : "v:" + b + ">" + a; rev = a > b;
+    } else if (from.kind === "hotel") key = "h:" + from.key + ">" + to.key;
+    else { key = "h:" + to.key + ">" + from.key; rev = true; }
+    const r = MAP.routes[key];
+    if (!r) return null;
+    const pts = [];
+    for (let i = 0; i < r.p.length; i += 2) pts.push([r.p[i], r.p[i + 1]]);
+    if (rev) pts.reverse();
+    return { m: r.m, pts };
+  }
+
+  function ringPath(arr, close) {
+    let d = "";
+    for (let i = 0; i < arr.length; i += 2) d += (i ? "L" : "M") + arr[i] + " " + arr[i + 1];
+    return close ? d + "Z" : d;
+  }
+
+  function drawBase(svg) {
+    const c = (v) => cssVar(v);
+    const g = sv("g", { id: "base" });
+    const [Wm, Hm] = MAP.size;
+    g.append(sv("rect", { x: -2000, y: -2000, width: Wm + 4000, height: Hm + 4000, fill: c("--map-land") }));
+    const multi = (list, close, attrs) => { if (list.length) g.append(sv("path", Object.assign({ d: list.map((a) => ringPath(a, close)).join("") }, attrs))); };
+    multi(MAP.parking, true, { fill: c("--map-park") });
+    multi(MAP.green, true, { fill: c("--map-green") });
+    multi(MAP.water, true, { fill: c("--map-water") });
+    const plain = MAP.buildings.filter((b) => !b.v && !(b.n && b.a > 9000));
+    const named = MAP.buildings.filter((b) => !b.v && b.n && b.a > 9000);
+    multi(plain.map((b) => b.p), true, { fill: c("--map-bldg"), stroke: c("--map-bldg-edge"), "stroke-width": 0.6, "vector-effect": "non-scaling-stroke" });
+    multi(named.map((b) => b.p), true, { fill: c("--map-bldg-named"), stroke: c("--map-bldg-edge"), "stroke-width": 0.8, "vector-effect": "non-scaling-stroke" });
+    MAP.buildings.filter((b) => b.v).forEach((b) => {
+      g.append(sv("path", { d: ringPath(b.p, true), fill: c(VENUES[b.v].color), "fill-opacity": 0.28, stroke: c(VENUES[b.v].color), "stroke-width": 1.5, "vector-effect": "non-scaling-stroke" }));
+    });
+    const R = MAP.roads;
+    const line = (list, attrs) => { if (list.length) g.append(sv("path", Object.assign({ d: list.map((a) => ringPath(a, false)).join(""), fill: "none", "stroke-linecap": "round", "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke" }, attrs))); };
+    line(R.service, { stroke: c("--map-service"), "stroke-width": 1.4, class: "z-service" });
+    line(R.foot, { stroke: c("--map-foot"), "stroke-width": 0.9, "stroke-dasharray": "2 2", class: "z-foot" });
+    line(R.minor, { stroke: c("--map-major-edge"), "stroke-width": 4.2 });
+    line(R.minor, { stroke: c("--map-minor"), "stroke-width": 2.6 });
+    line(R.major, { stroke: c("--map-major-edge"), "stroke-width": 7.5 });
+    line(R.major, { stroke: c("--map-major"), "stroke-width": 5.5 });
+    line(R.motor, { stroke: c("--map-major-edge"), "stroke-width": 8 });
+    line(R.motor, { stroke: c("--map-motor"), "stroke-width": 6 });
+    line(R.bridge, { stroke: c("--map-bridge"), "stroke-width": 2.4, "stroke-opacity": 0.75 });
+    line(MAP.rail, { stroke: c("--map-rail"), "stroke-width": 2.4, "stroke-dasharray": "7 4" });
+    svg.append(g);
+  }
+
+  function fitTo(pts, pad) {
+    const svg = $("#map");
+    const cw = svg.clientWidth || 400, ch = svg.clientHeight || 600;
+    let x0 = Math.min(...pts.map((p) => p[0])), x1 = Math.max(...pts.map((p) => p[0]));
+    let y0 = Math.min(...pts.map((p) => p[1])), y1 = Math.max(...pts.map((p) => p[1]));
+    const w0 = Math.max(x1 - x0, 500) + pad * 2, h0 = Math.max(y1 - y0, 500) + pad * 2;
+    const ar = cw / ch;
+    let w = w0, h = h0;
+    if (w / h > ar) h = w / ar; else w = h * ar;
+    vb = { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h };
+  }
+  function fitDay(plan) {
+    const pts = [mp(HOTELS[state.hotel])];
+    plan.list.forEach((s) => pts.push(mp(VENUES[s.venue])));
+    plan.legs.forEach((l) => { const r = l.best.mode === "walk" ? routeFor(l.from, l.to) : null; if (r) r.pts.forEach((p) => pts.push(p)); });
+    if (pts.length < 2) CAMPUS.forEach((k) => pts.push(mp(VENUES[k])));
+    fitTo(pts, 260);
+  }
+  function fitAll() { fitTo(CAMPUS.map((k) => mp(VENUES[k])).concat([mp(HOTELS[state.hotel])]), 300); }
+
+  function applyVB() {
+    const svg = $("#map");
+    // keep the aspect of the element
+    const cw = svg.clientWidth || 400, ch = svg.clientHeight || 600;
+    const ar = cw / ch;
+    if (Math.abs(vb.w / vb.h - ar) > 0.001) { const cx = vb.x + vb.w / 2; vb.w = vb.h * ar; vb.x = cx - vb.w / 2; }
+    svg.setAttribute("viewBox", vb.x.toFixed(1) + " " + vb.y.toFixed(1) + " " + vb.w.toFixed(1) + " " + vb.h.toFixed(1));
+    const k = vb.w / cw; // metres per screen px
+    const base = $("#base");
+    if (base) {
+      base.querySelectorAll(".z-foot").forEach((n) => (n.style.display = k > 4 ? "none" : ""));
+      base.querySelectorAll(".z-service").forEach((n) => (n.style.display = k > 6 ? "none" : ""));
+    }
+    drawOverlay(k);
+  }
+
+  function drawOverlay(k) {
+    const svg = $("#map");
+    const old = $("#overlay"); if (old) old.remove();
+    const plan = lastPlan; if (!plan) return;
+    const c = (v) => cssVar(v);
+    const ov = sv("g", { id: "overlay" });
+    const placed = [];
+    const fits = (x, y, w, h) => {
+      for (const b of placed) if (x < b.x + b.w && x + w > b.x && y < b.y + b.h && y + h > b.y) return false;
+      placed.push({ x, y, w, h }); return true;
+    };
+    const textW = (s, px) => s.length * px * 0.52 * k;
+    const statusCol = { ok: c("--ok"), warn: c("--warn"), bad: c("--bad") };
+
+    // reserve marker spots first
+    const order = {}; plan.list.forEach((s, i) => { (order[s.venue] = order[s.venue] || []).push(i + 1); });
+    CAMPUS.forEach((key) => { const [x, y] = mp(VENUES[key]); placed.push({ x: x - 13 * k, y: y - 13 * k, w: 26 * k, h: 26 * k }); });
+
+    // route
+    const rl = sv("g", {});
+    const badges = [];
+    plan.legs.forEach((l, i) => {
+      if (sameProperty(l.from, l.to)) return;
+      const isEnd = !l.prev || !l.next;
+      const sel = state.sel === i, dim = state.sel !== null && !sel;
+      const col = isEnd ? c("--muted") : statusCol[l.status];
+      const r = l.best.mode === "walk" ? routeFor(l.from, l.to) : null;
+      let d, mid;
+      if (r) {
+        d = r.pts.map((p, j) => (j ? "L" : "M") + p[0] + " " + p[1]).join("");
+        mid = r.pts[Math.floor(r.pts.length / 2)];
+      } else {
+        const [x1, y1] = mp(placeOf(l.from)), [x2, y2] = mp(placeOf(l.to));
+        const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) || 1, bend = Math.min(400, len * 0.2) * (i % 2 ? 1 : -1);
+        const cx = (x1 + x2) / 2 - (dy / len) * bend, cy = (y1 + y2) / 2 + (dx / len) * bend;
+        d = `M${x1} ${y1} Q${cx} ${cy} ${x2} ${y2}`;
+        mid = [0.25 * x1 + 0.5 * cx + 0.25 * x2, 0.25 * y1 + 0.5 * cy + 0.25 * y2];
+      }
+      rl.append(sv("path", { d, fill: "none", stroke: c("--surface"), "stroke-width": sel ? 9 : 7, "stroke-linecap": "round", "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke", opacity: dim ? 0.1 : 0.9 }));
+      rl.append(sv("path", { d, fill: "none", stroke: col, "stroke-width": sel ? 6 : 4, "stroke-linecap": "round", "stroke-linejoin": "round", "vector-effect": "non-scaling-stroke",
+        "stroke-dasharray": r ? (isEnd ? "1 7" : "none") : "8 6", opacity: dim ? 0.18 : 1 }));
+      if (!isEnd || sel) badges.push({ mid, txt: l.best.min + "′ " + (r ? "walk" : l.best.mode === "rideshare" ? "ride" : l.best.mode), col, dim });
+    });
+    ov.append(rl);
+
+    // building labels (casinos)
+    const lab = sv("g", { "font-size": 11.5 * k, fill: c("--map-label"), "text-anchor": "middle", "font-weight": 600, stroke: c("--map-land"), "stroke-width": 3 * k, "paint-order": "stroke", "letter-spacing": 0.02 * 11 * k });
+    const minArea = k > 6 ? 60000 : k > 3 ? 25000 : 9000;
+    const view = { x0: vb.x, x1: vb.x + vb.w, y0: vb.y, y1: vb.y + vb.h };
+    const inView = (x, y) => x > view.x0 && x < view.x1 && y > view.y0 && y < view.y1;
+    MAP.labels.slice().sort((a, b) => b.a - a.a).forEach((L) => {
+      if (L.a < minArea || !inView(L.x, L.y)) return;
+      const w = textW(L.n, 11.5), h = 14 * k;
+      if (!fits(L.x - w / 2, L.y - h / 2, w, h)) return;
+      lab.append(sv("text", { x: L.x, y: L.y + 4 * k }, L.n));
+    });
+    // street labels
+    const st = sv("g", { "font-size": 10.5 * k, fill: c("--muted"), "text-anchor": "middle", "font-style": "italic", stroke: c("--map-land"), "stroke-width": 3 * k, "paint-order": "stroke" });
+    MAP.streets.slice().sort((a, b) => b.L - a.L).forEach((S) => {
+      if (!inView(S.x, S.y) || (k > 5 && S.L < 1200)) return;
+      const w = textW(S.n, 10.5), h = 12 * k;
+      if (!fits(S.x - w / 2, S.y - h / 2, w, h)) return;
+      st.append(sv("text", { x: S.x, y: S.y + 3.5 * k, transform: `rotate(${S.r} ${S.x} ${S.y})` }, S.n));
+    });
+    ov.append(st); ov.append(lab);
+
+    // monorail stations
+    MONORAIL.forEach((s) => {
+      const [x, y] = mp(s);
+      ov.append(sv("rect", { x: x - 5 * k, y: y - 5 * k, width: 10 * k, height: 10 * k, rx: 2 * k, fill: c("--surface"), stroke: c("--map-rail"), "stroke-width": 2 * k }));
+      if (k < 4 && inView(x, y)) {
+        const w = textW("M " + s.name, 10), h = 12 * k;
+        if (fits(x + 8 * k, y - 6 * k, w, h)) ov.append(sv("text", { x: x + 8 * k, y: y + 3.5 * k, "font-size": 10 * k, fill: c("--map-rail"), stroke: c("--map-land"), "stroke-width": 3 * k, "paint-order": "stroke", "font-weight": 600 }, "Monorail · " + s.name));
+      }
+    });
+
+    // venue markers
+    CAMPUS.forEach((key) => {
+      const v = VENUES[key]; const [x, y] = mp(v);
+      const used = !!order[key];
+      const r = (used ? 12 : 8) * k;
+      ov.append(sv("circle", { cx: x, cy: y, r, fill: c(v.color), stroke: c("--surface"), "stroke-width": 2.5 * k }));
+      if (used) ov.append(sv("text", { x, y: y + 4 * k, "font-size": (order[key].length > 2 ? 9 : 11.5) * k, "text-anchor": "middle", fill: "#fff", "font-weight": 700 }, order[key].length > 2 ? order[key].length + "×" : order[key].join(",")));
+      const fs = 14.5;
+      ov.append(sv("text", { x: x + r + 5 * k, y: y + 5 * k, "font-size": fs * k, "font-weight": 700, fill: c(v.color), stroke: c("--surface"), "stroke-width": 4 * k, "paint-order": "stroke" }, v.name));
+    });
+    // hotel
+    const [hx, hy] = mp(HOTELS[state.hotel]);
+    ov.append(sv("rect", { x: hx - 7 * k, y: hy - 7 * k, width: 14 * k, height: 14 * k, rx: 2 * k, fill: c("--ink"), stroke: c("--surface"), "stroke-width": 2 * k, transform: `rotate(45 ${hx} ${hy})` }));
+    ov.append(sv("text", { x: hx - 13 * k, y: hy + 4.5 * k, "font-size": 12.5 * k, "text-anchor": "end", fill: c("--ink"), stroke: c("--surface"), "stroke-width": 4 * k, "paint-order": "stroke", "font-weight": 700 }, "Your hotel · " + HOTELS[state.hotel].name));
+    // leg badges on top
+    badges.forEach((b) => {
+      const w = (b.txt.length * 6.6 + 10) * k, h = 18 * k;
+      const g = sv("g", { opacity: b.dim ? 0.25 : 1 });
+      g.append(sv("rect", { x: b.mid[0] - w / 2, y: b.mid[1] - h / 2, width: w, height: h, rx: 9 * k, fill: c("--surface"), stroke: b.col, "stroke-width": 1.6 * k }));
+      g.append(sv("text", { x: b.mid[0], y: b.mid[1] + 4 * k, "font-size": 11 * k, "text-anchor": "middle", fill: c("--ink"), "font-weight": 600 }, b.txt));
+      ov.append(g);
+    });
+    // scale bar (screen space)
+    const sbPx = 100, sbM = sbPx * k;
+    const nice = [50, 100, 200, 250, 500, 1000, 2000].reduce((a, b) => (Math.abs(b - sbM) < Math.abs(a - sbM) ? b : a));
+    const px = nice / k, sx = vb.x + 12 * k, sy = vb.y + vb.h - 34 * k;
+    ov.append(sv("path", { d: `M${sx} ${sy - 4 * k} V${sy} H${sx + px * k} V${sy - 4 * k}`, fill: "none", stroke: c("--ink"), "stroke-width": 1.5 * k }));
+    ov.append(sv("text", { x: sx, y: sy - 7 * k, "font-size": 10 * k, fill: c("--ink"), stroke: c("--map-land"), "stroke-width": 3 * k, "paint-order": "stroke" }, nice >= 1000 ? (nice / 1000) + " km · " + (nice / 1609.34).toFixed(1) + " mi" : nice + " m · " + Math.round(nice * 3.281) + " ft"));
+    svg.append(ov);
+  }
+
   function renderMap(plan) {
+    lastPlan = plan;
+    const svg = $("#map");
+    if (!MAP) { renderSchematic(plan); return; }
+    const key = document.documentElement.getAttribute("data-theme") + "|" + matchMedia("(prefers-color-scheme: dark)").matches + "|" + state.hotel;
+    if (key !== baseKey || !$("#base")) { svg.textContent = ""; drawBase(svg); baseKey = key; }
+    const fk = state.day + "|" + state.hotel + "|" + plan.list.map((s) => s.venue + s.start).join(",");
+    if (!vb || fk !== fitKey) { fitDay(plan); fitKey = fk; }
+    applyVB();
+  }
+
+  function initMapInteraction() {
+    const svg = $("#map");
+    const toLocal = (cx, cy) => { const r = svg.getBoundingClientRect(); return [vb.x + ((cx - r.left) / r.width) * vb.w, vb.y + ((cy - r.top) / r.height) * vb.h]; };
+    const clampZoom = (f) => { const nw = vb.w * f; const min = 250, max = MAP.size[1] * 1.6; return nw < min ? min / vb.w : nw > max ? max / vb.w : f; };
+    const zoomAt = (f, px, py) => { f = clampZoom(f); vb = { x: px - (px - vb.x) * f, y: py - (py - vb.y) * f, w: vb.w * f, h: vb.h * f }; schedule(); };
+    let raf = 0; const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; applyVB(); }); };
+    svg.addEventListener("wheel", (e) => { e.preventDefault(); const [px, py] = toLocal(e.clientX, e.clientY); zoomAt(Math.exp(e.deltaY * (e.deltaMode ? 0.05 : 0.0018)), px, py); }, { passive: false });
+    const ptrs = new Map(); let pinch = null;
+    svg.addEventListener("pointerdown", (e) => { svg.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); svg.classList.add("dragging"); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) }; } });
+    svg.addEventListener("pointermove", (e) => {
+      if (!ptrs.has(e.pointerId)) return;
+      const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+      const r = svg.getBoundingClientRect();
+      if (ptrs.size === 1) { vb.x -= ((e.clientX - prev[0]) / r.width) * vb.w; vb.y -= ((e.clientY - prev[1]) / r.height) * vb.h; schedule(); }
+      else if (ptrs.size === 2 && pinch) {
+        const [a, b] = [...ptrs.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+        const [px, py] = toLocal((a[0] + b[0]) / 2, (a[1] + b[1]) / 2); zoomAt(pinch.d / d, px, py); pinch.d = d;
+      }
+    });
+    const up = (e) => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) svg.classList.remove("dragging"); };
+    svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up);
+    const center = () => [vb.x + vb.w / 2, vb.y + vb.h / 2];
+    $("#zin").addEventListener("click", () => zoomAt(0.7, ...center()));
+    $("#zout").addEventListener("click", () => zoomAt(1 / 0.7, ...center()));
+    $("#zday").addEventListener("click", () => { fitDay(lastPlan); applyVB(); });
+    $("#zall").addEventListener("click", () => { fitAll(); applyVB(); });
+    svg.addEventListener("keydown", (e) => {
+      const s = vb.w * 0.1, m = { ArrowLeft: [-s, 0], ArrowRight: [s, 0], ArrowUp: [0, -s], ArrowDown: [0, s] }[e.key];
+      if (m) { e.preventDefault(); vb.x += m[0]; vb.y += m[1]; schedule(); }
+      else if (e.key === "+" || e.key === "=") zoomAt(0.8, ...center());
+      else if (e.key === "-") zoomAt(1.25, ...center());
+    });
+    new ResizeObserver(() => { if (vb) schedule(); }).observe(svg);
+  }
+
+  async function loadMap() {
+    try {
+      const res = await fetch("strip-map.json");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data || !data.routes || !data.buildings) return;
+      MAP = data;
+      const svg = $("#map");
+      svg.classList.remove("schematic");
+      svg.setAttribute("tabindex", "0");
+      $("#mapctl").hidden = false; $("#mapattr").hidden = false; $("#maptip").hidden = false;
+      $("#lg-bridge").hidden = false; $("#lg-ride").hidden = false;
+      $("#mapsum").textContent = "Walking legs follow real paths";
+      initMapInteraction();
+      renderAll();
+    } catch (e) { /* stay on the schematic map */ }
+  }
+
+  /* schematic fallback map */
+  function renderSchematic(plan) {
     const svg = $("#map"); svg.textContent = "";
     const pts = CAMPUS.map((k) => VENUES[k]).concat([HOTELS[state.hotel]]);
     let la0 = Math.min(...pts.map((p) => p.lat)) - 0.004, la1 = Math.max(...pts.map((p) => p.lat)) + 0.004;
@@ -1088,6 +1395,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => renderPlan());
   new MutationObserver(() => renderPlan()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
   connectCloud();
+  loadMap();
 })();
 </script>
 
