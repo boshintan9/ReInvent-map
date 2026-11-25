@@ -384,6 +384,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     PAR: { name: "Paris", lat: 36.1125, lon: -115.1707 },
     BEL: { name: "Bellagio", lat: 36.1126, lon: -115.1767 },
     PH:  { name: "Planet Hollywood", lat: 36.1100, lon: -115.1716 },
+    MGC: { name: "Marriott's Grand Chateau", lat: 36.1074, lon: -115.1693 },
     COS: { name: "The Cosmopolitan", lat: 36.1097, lon: -115.1740 },
     VDA: { name: "Vdara", lat: 36.1093, lon: -115.1780 },
     ARI: { name: "ARIA", lat: 36.1072, lon: -115.1765 },
@@ -550,7 +551,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
   ].map((s) => Object.assign({ id: uid(), example: true }, s));
 
   let state = {
-    hotel: "LNQ", pref: "fastest", buffer: 10, pace: 1,
+    hotel: "MGC", pref: "fastest", buffer: 10, pace: 1,
     sessions: EXAMPLES, updatedAt: 0, day: null, sel: null,
   };
   const LS = "rcc-plan-v1";
