@@ -27,6 +27,12 @@ Use the official re:Invent app for live shuttle times.
 - `src/strip-map.json` is the map data (OpenStreetMap, simplified, with precomputed walking routes). The page loads it from the same folder.
 - `docs/` is the standalone version for static hosting. Rebuild it with `scripts/build.sh`.
 
+### GitHub Pages
+
+`.github/workflows/pages.yml` rebuilds `docs/` from `src/` and deploys it on every push that touches `src/`.
+One-time setup: in the repo's **Settings → Pages**, set **Source** to **GitHub Actions**.
+The site is public, but each visitor's schedule stays in their own browser.
+
 ### Rebuilding the map data
 
 1. Download the area from the OSM API in tiles (`https://api.openstreetmap.org/api/0.6/map?bbox=W,S,E,N`;
