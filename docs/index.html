@@ -468,7 +468,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
     return 2 * R * Math.asin(Math.sqrt(x));
   }
-  const miles = (m) => (m / 1609.34).toFixed(m < 1609 ? 2 : 1) + " mi";
+  const distTxt = (m) => (m < 1000 ? Math.round(m / 10) * 10 + " m" : (m / 1000).toFixed(1) + " km");
 
   /* ------------------------------------------------------------ travel model */
   // A place is {kind:"venue"|"hotel", key}
@@ -722,7 +722,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     const row1 = el("div", { class: "row1" },
       el("b", { text: MODE_LABEL[l.best.mode] + " " + l.best.min + " min" }),
       el("span", { text: placeName(l.from) + " → " + placeName(l.to) }),
-      l.res.walkM ? el("span", { class: "muted", text: miles(l.res.walkM) + " on foot" }) : l.res.dist ? el("span", { class: "muted", text: miles(l.res.dist) + " straight-line" }) : null,
+      l.res.walkM ? el("span", { class: "muted", text: distTxt(l.res.walkM) + " on foot" }) : l.res.dist ? el("span", { class: "muted", text: distTxt(l.res.dist) + " straight-line" }) : null,
       l.gap !== null ? el("span", { class: "pill " + l.status, text: statusTxt }) : null);
     const bits = [];
     if (l.gap !== null && !l.overlap) bits.push("Gap " + dur(l.gap));
@@ -765,7 +765,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
       const walkMin = plan.legs.reduce((t, l) => t + l.best.min, 0);
       const dist = plan.legs.reduce((t, l) => t + (l.res.walkM || l.res.dist * 1.3), 0);
       const issues = plan.legs.filter((l) => l.status !== "ok").length;
-      $("#itinsum").textContent = d.n + " " + d.l + " · " + dur(walkMin) + " in transit · " + miles(dist) + " if you walked it all" + (issues ? " · " + issues + (issues === 1 ? " connection" : " connections") + " to check" : "");
+      $("#itinsum").textContent = d.n + " " + d.l + " · " + dur(walkMin) + " in transit · " + distTxt(dist) + " if you walked it all" + (issues ? " · " + issues + (issues === 1 ? " connection" : " connections") + " to check" : "");
     }
     renderStrip(plan);
     renderMap(plan);
@@ -971,7 +971,7 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     const nice = [50, 100, 200, 250, 500, 1000, 2000].reduce((a, b) => (Math.abs(b - sbM) < Math.abs(a - sbM) ? b : a));
     const px = nice / k, sx = vb.x + 12 * k, sy = vb.y + vb.h - 34 * k;
     ov.append(sv("path", { d: `M${sx} ${sy - 4 * k} V${sy} H${sx + px * k} V${sy - 4 * k}`, fill: "none", stroke: c("--ink"), "stroke-width": 1.5 * k }));
-    ov.append(sv("text", { x: sx, y: sy - 7 * k, "font-size": 10 * k, fill: c("--ink"), stroke: c("--map-land"), "stroke-width": 3 * k, "paint-order": "stroke" }, nice >= 1000 ? (nice / 1000) + " km · " + (nice / 1609.34).toFixed(1) + " mi" : nice + " m · " + Math.round(nice * 3.281) + " ft"));
+    ov.append(sv("text", { x: sx, y: sy - 7 * k, "font-size": 10 * k, fill: c("--ink"), stroke: c("--map-land"), "stroke-width": 3 * k, "paint-order": "stroke" }, nice >= 1000 ? (nice / 1000) + " km" : nice + " m"));
     svg.append(ov);
   }
 
@@ -1082,9 +1082,9 @@ Thu 4:30-5:30pm Encore | Chorus Ballroom | Workshop: Bedrock agents"></textarea>
     // north arrow + scale
     svg.append(sv("text", { x: W - 18, y: 22, "font-size": 13, "text-anchor": "middle", fill: col("--muted"), "font-weight": 600 }, "N"));
     svg.append(sv("path", { d: `M${W - 18} 26 l-5 12 l5 -3 l5 3 z`, fill: col("--muted") }));
-    const half = 804.67, px = (half / ((lo1 - lo0) * k * 111320)) * W;
+    const half = 500, px = (half / ((lo1 - lo0) * k * 111320)) * W;
     svg.append(sv("path", { d: `M12 ${H - 14} h${px.toFixed(1)}`, stroke: col("--muted"), "stroke-width": 2 }));
-    svg.append(sv("text", { x: 12, y: H - 19, "font-size": 10, fill: col("--muted") }, "½ mile"));
+    svg.append(sv("text", { x: 12, y: H - 19, "font-size": 10, fill: col("--muted") }, "500 m"));
 
     // route
     const legs = plan.legs;
